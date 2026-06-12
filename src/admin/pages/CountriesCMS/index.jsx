@@ -18,6 +18,7 @@ import Modal from '../../../components/ui/Modal';
 import Input from '../../../components/ui/Input';
 import { useUiStore } from '../../../store/uiStore';
 import { useDashboardStore } from '../../../store/dashboardStore';
+import ConfirmDialog from '../../../components/ui/ConfirmDialog';
 
 // Validation schema for country creation / editing
 const countryFormSchema = z.object({
@@ -41,6 +42,7 @@ const CountriesCMS = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCountry, setEditingCountry] = useState(null);
   const [formSubmitting, setFormSubmitting] = useState(false);
+  const [confirmState, setConfirmState] = useState({ open: false, id: null });
   
   const { showToast } = useUiStore();
   const { fetchStats } = useDashboardStore();
@@ -112,15 +114,20 @@ const CountriesCMS = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteClick = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this country study destination?')) return;
+  const handleDeleteClick = (id) => {
+    setConfirmState({ open: true, id });
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      await deleteDocument('countries', id);
+      await deleteDocument('countries', confirmState.id);
       showToast('Country deleted successfully.', 'success');
       fetchCountries();
       fetchStats();
     } catch (err) {
       showToast('Delete failed.', 'error');
+    } finally {
+      setConfirmState({ open: false, id: null });
     }
   };
 
@@ -404,6 +411,14 @@ const CountriesCMS = () => {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={confirmState.open}
+        title="Delete Country?"
+        message="This study destination will be permanently removed from the website."
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmState({ open: false, id: null })}
+      />
 
     </div>
   );

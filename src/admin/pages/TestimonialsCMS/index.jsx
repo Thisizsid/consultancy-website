@@ -17,6 +17,7 @@ import Modal from '../../../components/ui/Modal';
 import Input from '../../../components/ui/Input';
 import { useUiStore } from '../../../store/uiStore';
 import { useDashboardStore } from '../../../store/dashboardStore';
+import ConfirmDialog from '../../../components/ui/ConfirmDialog';
 
 const testimonialSchema = z.object({
   studentName: z.string().min(2, 'Name must be at least 2 characters'),
@@ -33,6 +34,7 @@ const TestimonialsCMS = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTestimonial, setEditingTestimonial] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmState, setConfirmState] = useState({ open: false, id: null });
 
   const { showToast } = useUiStore();
   const { fetchStats } = useDashboardStore();
@@ -88,15 +90,20 @@ const TestimonialsCMS = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteClick = async (id) => {
-    if (!window.confirm('Delete this testimonial?')) return;
+  const handleDeleteClick = (id) => {
+    setConfirmState({ open: true, id });
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      await deleteDocument('testimonials', id);
+      await deleteDocument('testimonials', confirmState.id);
       showToast('Testimonial deleted.', 'success');
       fetchTestimonials();
       fetchStats();
     } catch (err) {
       showToast('Delete failed.', 'error');
+    } finally {
+      setConfirmState({ open: false, id: null });
     }
   };
 
@@ -294,6 +301,14 @@ const TestimonialsCMS = () => {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={confirmState.open}
+        title="Delete Testimonial?"
+        message="This student review will be permanently removed from the website."
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmState({ open: false, id: null })}
+      />
 
     </div>
   );

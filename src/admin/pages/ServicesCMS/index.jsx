@@ -16,6 +16,7 @@ import Modal from '../../../components/ui/Modal';
 import Input from '../../../components/ui/Input';
 import { useUiStore } from '../../../store/uiStore';
 import { useDashboardStore } from '../../../store/dashboardStore';
+import ConfirmDialog from '../../../components/ui/ConfirmDialog';
 
 const serviceSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters'),
@@ -38,6 +39,7 @@ const ServicesCMS = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmState, setConfirmState] = useState({ open: false, id: null });
 
   const { showToast } = useUiStore();
   const { fetchStats } = useDashboardStore();
@@ -87,15 +89,20 @@ const ServicesCMS = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteClick = async (id) => {
-    if (!window.confirm('Delete this service option?')) return;
+  const handleDeleteClick = (id) => {
+    setConfirmState({ open: true, id });
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      await deleteDocument('services', id);
+      await deleteDocument('services', confirmState.id);
       showToast('Service deleted.', 'success');
       fetchServices();
       fetchStats();
     } catch (err) {
       showToast('Delete failed.', 'error');
+    } finally {
+      setConfirmState({ open: false, id: null });
     }
   };
 
@@ -226,6 +233,14 @@ const ServicesCMS = () => {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={confirmState.open}
+        title="Delete Service?"
+        message="This service card will be permanently removed."
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmState({ open: false, id: null })}
+      />
 
     </div>
   );

@@ -27,6 +27,7 @@ import Card, { CardBody, CardHeader } from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import Badge from '../../../components/ui/Badge';
 import Modal from '../../../components/ui/Modal';
+import ConfirmDialog from '../../../components/ui/ConfirmDialog';
 import { useUiStore } from '../../../store/uiStore';
 
 const STATUS_OPTIONS = [
@@ -249,6 +250,7 @@ const EnquiriesCMS = () => {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [viewDetailId, setViewDetailId] = useState(null);
+  const [confirmState, setConfirmState] = useState({ open: false, id: null });
 
   const { showToast } = useUiStore();
 
@@ -298,14 +300,19 @@ const EnquiriesCMS = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Permanently delete this enquiry?')) return;
+  const handleDelete = (id) => {
+    setConfirmState({ open: true, id });
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      await deleteDocument('enquiries', id);
-      setEnquiries((prev) => prev.filter((e) => e.id !== id));
+      await deleteDocument('enquiries', confirmState.id);
+      setEnquiries((prev) => prev.filter((e) => e.id !== confirmState.id));
       showToast('Enquiry deleted.', 'success');
     } catch {
       showToast('Delete failed.', 'error');
+    } finally {
+      setConfirmState({ open: false, id: null });
     }
   };
 
@@ -464,6 +471,14 @@ const EnquiriesCMS = () => {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmState.open}
+        title="Delete Enquiry?"
+        message="This enquiry will be permanently removed and cannot be recovered."
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmState({ open: false, id: null })}
+      />
     </div>
   );
 };

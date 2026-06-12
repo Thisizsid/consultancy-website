@@ -17,6 +17,7 @@ import Modal from '../../../components/ui/Modal';
 import Input from '../../../components/ui/Input';
 import { useUiStore } from '../../../store/uiStore';
 import { useDashboardStore } from '../../../store/dashboardStore';
+import ConfirmDialog from '../../../components/ui/ConfirmDialog';
 
 const eventSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters'),
@@ -33,6 +34,7 @@ const EventsCMS = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmState, setConfirmState] = useState({ open: false, id: null });
 
   const { showToast } = useUiStore();
   const { fetchStats } = useDashboardStore();
@@ -97,15 +99,20 @@ const EventsCMS = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteClick = async (id) => {
-    if (!window.confirm('Delete this event?')) return;
+  const handleDeleteClick = (id) => {
+    setConfirmState({ open: true, id });
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      await deleteDocument('events', id);
+      await deleteDocument('events', confirmState.id);
       showToast('Event deleted successfully.', 'success');
       fetchEvents();
       fetchStats();
     } catch (err) {
       showToast('Delete failed.', 'error');
+    } finally {
+      setConfirmState({ open: false, id: null });
     }
   };
 
@@ -273,6 +280,14 @@ const EventsCMS = () => {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={confirmState.open}
+        title="Delete Event?"
+        message="This seminar or webinar listing will be permanently removed."
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmState({ open: false, id: null })}
+      />
 
     </div>
   );

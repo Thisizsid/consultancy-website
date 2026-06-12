@@ -16,6 +16,7 @@ import Modal from '../../../components/ui/Modal';
 import Input from '../../../components/ui/Input';
 import { useUiStore } from '../../../store/uiStore';
 import { useDashboardStore } from '../../../store/dashboardStore';
+import ConfirmDialog from '../../../components/ui/ConfirmDialog';
 
 const partnerSchema = z.object({
   name: z.string().min(2, 'University name must be at least 2 characters'),
@@ -28,6 +29,7 @@ const PartnersCMS = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmState, setConfirmState] = useState({ open: false, id: null });
 
   const { showToast } = useUiStore();
   const { fetchStats } = useDashboardStore();
@@ -64,15 +66,20 @@ const PartnersCMS = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteClick = async (id) => {
-    if (!window.confirm('Delete this partner university logo?')) return;
+  const handleDeleteClick = (id) => {
+    setConfirmState({ open: true, id });
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      await deleteDocument('partners', id);
+      await deleteDocument('partners', confirmState.id);
       showToast('Partner deleted.', 'success');
       fetchPartners();
       fetchStats();
     } catch (err) {
       showToast('Delete failed.', 'error');
+    } finally {
+      setConfirmState({ open: false, id: null });
     }
   };
 
@@ -209,6 +216,14 @@ const PartnersCMS = () => {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={confirmState.open}
+        title="Delete Partner?"
+        message="This university association and logo will be permanently removed."
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmState({ open: false, id: null })}
+      />
 
     </div>
   );
