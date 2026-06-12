@@ -14,10 +14,10 @@ import { db } from './config';
 // -------------------------------------------------------------
 // TIMEOUT HELPER
 // -------------------------------------------------------------
-const withTimeout = (promise, ms = 1000) => {
+const withTimeout = (promise, ms = 8000) => {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
-      reject(new Error('Firebase operation timed out'));
+      reject(new Error('Firebase operation timed out. Please check your connection and try again.'));
     }, ms);
 
     promise
@@ -268,7 +268,7 @@ export const getAllDocuments = async (colName) => {
 
   try {
     const colRef = collection(db, colName);
-    const querySnapshot = await withTimeout(getDocs(colRef), 1000);
+    const querySnapshot = await withTimeout(getDocs(colRef), 8000);
 
     // Seed Firestore if empty
     if (querySnapshot.empty) {
@@ -281,10 +281,10 @@ export const getAllDocuments = async (colName) => {
       if (colName === 'partners') defaults = defaultPartners;
 
       for (const item of defaults) {
-        await withTimeout(addDoc(colRef, item), 800);
+        await withTimeout(addDoc(colRef, item), 8000);
       }
       // Re-fetch
-      const reFetched = await withTimeout(getDocs(colRef), 1000);
+      const reFetched = await withTimeout(getDocs(colRef), 8000);
       const items = [];
       reFetched.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
       return items;
@@ -314,7 +314,7 @@ export const getDocumentById = async (colName, docId) => {
 
   try {
     const docRef = doc(db, colName, docId);
-    const docSnap = await withTimeout(getDoc(docRef), 1000);
+    const docSnap = await withTimeout(getDoc(docRef), 8000);
     if (docSnap.exists()) {
       return { id: docSnap.id, ...docSnap.data() };
     }
@@ -342,7 +342,7 @@ export const getCountryBySlug = async (slug) => {
 
   try {
     const q = query(collection(db, 'countries'), where('slug', '==', slug));
-    const querySnapshot = await withTimeout(getDocs(q), 1000);
+    const querySnapshot = await withTimeout(getDocs(q), 8000);
     if (!querySnapshot.empty) {
       const docSnap = querySnapshot.docs[0];
       return { id: docSnap.id, ...docSnap.data() };
@@ -358,28 +358,15 @@ export const getCountryBySlug = async (slug) => {
 };
 
 /**
- * Create a new document
+ * Create a new document — always writes to Firestore, never localStorage.
+ * For enquiries/bookings: throws on failure so the form can show a real error.
  */
 export const createDocument = async (colName, data) => {
-  if (useLocalFallback) {
-    const local = getLocalData(colName);
-    const newDoc = { id: `${colName}_${Date.now()}`, ...data };
-    local.push(newDoc);
-    setLocalData(colName, local);
-    return newDoc;
-  }
-
-  try {
-    const docRef = await withTimeout(addDoc(collection(db, colName), data), 1200);
-    return { id: docRef.id, ...data };
-  } catch (error) {
-    triggerLocalFallback(colName, error.message);
-    const local = getLocalData(colName);
-    const newDoc = { id: `${colName}_${Date.now()}`, ...data };
-    local.push(newDoc);
-    setLocalData(colName, local);
-    return newDoc;
-  }
+  const docRef = await withTimeout(
+    addDoc(collection(db, colName), data),
+    10000  // 10s — generous for cold Vercel + Firestore handshake
+  );
+  return { id: docRef.id, ...data };
 };
 
 /**
@@ -399,7 +386,7 @@ export const updateDocument = async (colName, docId, data) => {
 
   try {
     const docRef = doc(db, colName, docId);
-    await withTimeout(updateDoc(docRef, data), 1200);
+    await withTimeout(updateDoc(docRef, data), 8000);
   } catch (error) {
     triggerLocalFallback(colName, error.message);
     const local = getLocalData(colName);
@@ -424,7 +411,7 @@ export const deleteDocument = async (colName, docId) => {
 
   try {
     const docRef = doc(db, colName, docId);
-    await withTimeout(deleteDoc(docRef), 1200);
+    await withTimeout(deleteDoc(docRef), 8000);
   } catch (error) {
     triggerLocalFallback(colName, error.message);
     const local = getLocalData(colName);
