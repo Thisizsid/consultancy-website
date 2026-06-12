@@ -1,0 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Santamonica-inspired color palette */
+  --primary: #1D2143;
+  --primary-light: #1F2437;
+  --primary-dark: #111B21;
+  --secondary: #FF5421;
+  --secondary-light: #FF7043;
+  --secondary-dark: #E64A19;
+  --accent: #033052;
+  --accent-light: #1480E0;
+
+  --bg: #FFFFFF;
+  --surface: #F5FAFF;
+  --surface-alt: #FAFAFA;
+
+  --text-primary: #1D2143;
+  --text-secondary: #49687E;
+  --text-muted: #83A1B7;
+
+  --border-color: #E4E4E4;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  --shadow-sm: 0 2px 8px rgba(29, 33, 67, 0.06);
+  --shadow-md: 0 6px 20px rgba(29, 33, 67, 0.10);
+  --shadow-lg: 0 12px 40px rgba(29, 33, 67, 0.12);
+
+  --container: 1280px;
+}
