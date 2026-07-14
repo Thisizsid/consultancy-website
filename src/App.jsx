@@ -21,6 +21,7 @@ import EventsCMS from './admin/pages/EventsCMS';
 import TestimonialsCMS from './admin/pages/TestimonialsCMS';
 import PartnersCMS from './admin/pages/PartnersCMS';
 import EnquiriesCMS from './admin/pages/EnquiriesCMS';
+import BranchesCMS from './admin/pages/BranchesCMS';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
 function App() {
@@ -66,6 +67,7 @@ function App() {
           <Route path="testimonials" element={<TestimonialsCMS />} />
           <Route path="partners" element={<PartnersCMS />} />
           <Route path="enquiries" element={<EnquiriesCMS />} />
+          <Route path="branches" element={<BranchesCMS />} />
         </Route>
 
         {/* Wildcard Fallback */}

@@ -12,7 +12,8 @@ import {
   X, 
   Eye,
   Compass,
-  Inbox
+  Inbox,
+  GitBranch
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useUiStore } from '../../store/uiStore';
@@ -42,6 +43,7 @@ const AdminLayout = () => {
     { name: 'Events CMS', path: '/admin/events', icon: Calendar },
     { name: 'Testimonials CMS', path: '/admin/testimonials', icon: MessageSquare },
     { name: 'Partners CMS', path: '/admin/partners', icon: Building },
+    { name: 'Branches', path: '/admin/branches', icon: GitBranch },
   ];
 
   return (

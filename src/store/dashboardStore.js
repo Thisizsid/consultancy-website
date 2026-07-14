@@ -9,6 +9,7 @@ export const useDashboardStore = create((set, get) => ({
     testimonials: 0,
     enquiries: 0,
     newEnquiries: 0,
+    branches: 0,
   },
   loadingStats: false,
   error: null,
@@ -32,6 +33,7 @@ export const useDashboardStore = create((set, get) => ({
       const events = await getAllDocuments('events');
       const testimonials = await getAllDocuments('testimonials');
       const enquiries = await getAllDocuments('enquiries');
+      const branches = await getAllDocuments('branches');
 
       set({
         stats: {
@@ -41,6 +43,7 @@ export const useDashboardStore = create((set, get) => ({
           testimonials: testimonials.length,
           enquiries: enquiries.length,
           newEnquiries: enquiries.filter(e => !e.status || e.status === 'new').length,
+          branches: branches.length,
         },
         loadingStats: false,
       });

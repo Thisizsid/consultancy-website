@@ -20,7 +20,12 @@ import {
   CheckCircle,
   HelpCircle,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  MapPin,
+  Phone,
+  Mail,
+  Clock,
+  GitBranch
 } from 'lucide-react';
 import { getAllDocuments, createDocument } from '../../firebase/firestore';
 import Button from '../../components/ui/Button';
@@ -54,6 +59,7 @@ const Home = () => {
   const [testimonials, setTestimonials] = useState([]);
   const [events, setEvents] = useState([]);
   const [partners, setPartners] = useState([]);
+  const [branches, setBranches] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -125,19 +131,21 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [cnts, srvs, tstms, evts, ptns] = await Promise.all([
+        const [cnts, srvs, tstms, evts, ptns, brchs] = await Promise.all([
           getAllDocuments('countries'),
           getAllDocuments('services'),
           getAllDocuments('testimonials'),
           getAllDocuments('events'),
           getAllDocuments('partners'),
+          getAllDocuments('branches'),
         ]);
         
         setCountries(cnts.filter(c => c.visible !== false));
         setServices(srvs);
-        setTestimonials(tstms);
+        setTestimonials(tstms.slice(0, 3));
         setEvents(evts.filter(e => e.status === 'upcoming').slice(0, 3));
         setPartners(ptns);
+        setBranches(brchs.filter(b => b.status === 'active'));
       } catch (error) {
         console.error('Error fetching landing data:', error);
       } finally {
@@ -539,7 +547,71 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 8. EVENTS SECTION */}
+      {/* 8. BRANCHES SECTION */}
+      {branches.length > 0 && (
+        <section className="py-20 md:py-24 bg-white">
+          <div className="max-w-container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+              <Badge variant="success">OUR BRANCHES</Badge>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-primary">
+                Find a Branch Near You
+              </h2>
+              <p className="text-text-secondary leading-relaxed">
+                Visit any of our conveniently located offices and speak directly with our expert counselors.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {branches.map((branch) => (
+                <div
+                  key={branch.id}
+                  className="group bg-white border border-gray-150 rounded-lg p-6 flex flex-col gap-4 shadow-sm hover:shadow-md hover:border-secondary/30 transition-all duration-300"
+                >
+                  {/* Branch Header */}
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-md bg-secondary/10 flex items-center justify-center shrink-0 group-hover:bg-secondary/20 transition-colors">
+                      <GitBranch className="w-5 h-5 text-secondary" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-text-primary text-base leading-snug">{branch.name}</h3>
+                      <p className="text-xs text-secondary font-semibold mt-0.5">{branch.city}</p>
+                    </div>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="h-px bg-gray-100" />
+
+                  {/* Details */}
+                  <div className="space-y-2.5 text-xs text-text-secondary">
+                    <div className="flex items-start gap-2">
+                      <MapPin className="w-3.5 h-3.5 text-accent shrink-0 mt-0.5" />
+                      <span>{branch.address}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-3.5 h-3.5 text-secondary shrink-0" />
+                      <a href={`tel:${branch.phone}`} className="hover:text-secondary transition-colors">
+                        {branch.phone}
+                      </a>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-3.5 h-3.5 text-secondary shrink-0" />
+                      <a href={`mailto:${branch.email}`} className="hover:text-secondary transition-colors truncate">
+                        {branch.email}
+                      </a>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-accent shrink-0" />
+                      <span>{branch.openingHours}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 9. EVENTS SECTION */}
       {events.length > 0 && (
         <section className="py-20 md:py-24">
           <div className="max-w-container mx-auto px-4 sm:px-6 lg:px-8">
@@ -584,7 +656,7 @@ const Home = () => {
         </section>
       )}
 
-      {/* 9. CONTACT SECTION */}
+      {/* 10. CONTACT SECTION */}
       <section id="contact-section" className="py-20 md:py-24 bg-gradient-to-br from-primary via-primary-light to-accent text-white">
         <div className="max-w-container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
