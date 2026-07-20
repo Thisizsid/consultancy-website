@@ -25,7 +25,9 @@ import {
   Phone,
   Mail,
   Clock,
-  GitBranch
+  GitBranch,
+  ImageIcon,
+  ZoomIn
 } from 'lucide-react';
 import { getAllDocuments, createDocument } from '../../firebase/firestore';
 import Button from '../../components/ui/Button';
@@ -60,6 +62,7 @@ const Home = () => {
   const [events, setEvents] = useState([]);
   const [partners, setPartners] = useState([]);
   const [branches, setBranches] = useState([]);
+  const [galleryPhotos, setGalleryPhotos] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -131,13 +134,14 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [cnts, srvs, tstms, evts, ptns, brchs] = await Promise.all([
+        const [cnts, srvs, tstms, evts, ptns, brchs, glry] = await Promise.all([
           getAllDocuments('countries'),
           getAllDocuments('services'),
           getAllDocuments('testimonials'),
           getAllDocuments('events'),
           getAllDocuments('partners'),
           getAllDocuments('branches'),
+          getAllDocuments('gallery'),
         ]);
         
         setCountries(cnts.filter(c => c.visible !== false));
@@ -146,6 +150,13 @@ const Home = () => {
         setEvents(evts.filter(e => e.status === 'upcoming').slice(0, 3));
         setPartners(ptns);
         setBranches(brchs.filter(b => b.status === 'active'));
+        // Sort gallery by newest, take first 6
+        const sortedGallery = glry.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt) : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt) : 0;
+          return dateB - dateA;
+        });
+        setGalleryPhotos(sortedGallery.slice(0, 6));
       } catch (error) {
         console.error('Error fetching landing data:', error);
       } finally {
@@ -546,6 +557,57 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* PHOTO GALLERY PREVIEW SECTION */}
+      {galleryPhotos.length > 0 && (
+        <section className="py-20 md:py-24 bg-surface">
+          <div className="max-w-container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
+              <div className="space-y-3 max-w-xl">
+                <Badge variant="info">PHOTO GALLERY</Badge>
+                <h2 className="text-3xl md:text-4xl font-extrabold text-primary">Moments & Memories</h2>
+                <p className="text-text-secondary leading-relaxed">
+                  Explore highlights from our seminars, student sessions, and office events.
+                </p>
+              </div>
+              <Link to="/gallery">
+                <Button variant="outline" size="md">
+                  View Full Gallery
+                </Button>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {galleryPhotos.map((photo, idx) => (
+                <Link
+                  to="/gallery"
+                  key={photo.id}
+                  className="group relative rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-500 bg-white"
+                >
+                  <div className={`overflow-hidden ${idx === 0 ? 'aspect-[4/3]' : 'aspect-square'}`}>
+                    <img
+                      src={photo.imageUrl}
+                      alt={photo.caption}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-4">
+                    <div className="transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500">
+                      <p className="text-white text-sm font-semibold leading-snug">
+                        {photo.caption}
+                      </p>
+                    </div>
+                    <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transform scale-75 group-hover:scale-100 transition-all duration-500">
+                      <ZoomIn className="w-4 h-4 text-white" />
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* 8. BRANCHES SECTION */}
       {branches.length > 0 && (

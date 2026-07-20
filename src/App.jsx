@@ -9,6 +9,7 @@ import Countries from './pages/Countries';
 import CountryDetail from './pages/CountryDetail';
 import Services from './pages/Services';
 import Events from './pages/Events';
+import Gallery from './pages/Gallery';
 import Contact from './pages/Contact';
 
 // Admin Layout & Pages
@@ -22,6 +23,7 @@ import TestimonialsCMS from './admin/pages/TestimonialsCMS';
 import PartnersCMS from './admin/pages/PartnersCMS';
 import EnquiriesCMS from './admin/pages/EnquiriesCMS';
 import BranchesCMS from './admin/pages/BranchesCMS';
+import GalleryCMS from './admin/pages/GalleryCMS';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
 function App() {
@@ -44,6 +46,7 @@ function App() {
           <Route path="countries/:slug" element={<CountryDetail />} />
           <Route path="services" element={<Services />} />
           <Route path="events" element={<Events />} />
+          <Route path="gallery" element={<Gallery />} />
           <Route path="contact" element={<Contact />} />
         </Route>
 
@@ -68,6 +71,7 @@ function App() {
           <Route path="partners" element={<PartnersCMS />} />
           <Route path="enquiries" element={<EnquiriesCMS />} />
           <Route path="branches" element={<BranchesCMS />} />
+          <Route path="gallery" element={<GalleryCMS />} />
         </Route>
 
         {/* Wildcard Fallback */}

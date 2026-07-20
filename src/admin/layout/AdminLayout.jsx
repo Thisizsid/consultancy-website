@@ -1,23 +1,24 @@
 import React from 'react';
 import { NavLink, useNavigate, Outlet, Link } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Globe, 
-  Briefcase, 
-  Calendar, 
-  MessageSquare, 
-  Building, 
-  LogOut, 
-  Menu, 
-  X, 
+import {
+  LayoutDashboard,
+  Globe,
+  Briefcase,
+  Calendar,
+  MessageSquare,
+  Building,
+  LogOut,
+  Menu,
+  X,
   Eye,
-  Compass,
   Inbox,
-  GitBranch
+  GitBranch,
+  ImageIcon
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useUiStore } from '../../store/uiStore';
 import Button from '../../components/ui/Button';
+import logo from '../../assets/logo.png';
 
 const AdminLayout = () => {
   const navigate = useNavigate();
@@ -44,12 +45,13 @@ const AdminLayout = () => {
     { name: 'Testimonials CMS', path: '/admin/testimonials', icon: MessageSquare },
     { name: 'Partners CMS', path: '/admin/partners', icon: Building },
     { name: 'Branches', path: '/admin/branches', icon: GitBranch },
+    { name: 'Gallery CMS', path: '/admin/gallery', icon: ImageIcon },
   ];
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar Drawer */}
-      <aside 
+      <aside
         className={`
           fixed inset-y-0 left-0 z-30 w-64 bg-primary text-white flex flex-col justify-between 
           transform transition-transform duration-300 md:relative md:transform-none
@@ -59,8 +61,14 @@ const AdminLayout = () => {
         <div>
           {/* Sidebar Header */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800">
-            <Link to="/" className="flex items-center gap-2">
-              <Compass className="w-6 h-6 text-secondary" />
+            <Link to="/" className="flex items-center gap-2.5">
+              <div className="bg-white p-1 rounded-full shadow-sm shrink-0">
+                <img
+                  src={logo}
+                  alt="Lasso logo"
+                  className="h-7 w-7 object-contain"
+                />
+              </div>
               <span className="font-extrabold text-lg tracking-wider">LASSO CMS</span>
             </Link>
             <button className="md:hidden p-1 text-gray-400 hover:text-white" onClick={toggleSidebar}>
@@ -78,8 +86,8 @@ const AdminLayout = () => {
                   to={link.path}
                   className={({ isActive }) => `
                     flex items-center gap-3 px-4 py-3 rounded-md text-sm font-semibold transition-all duration-200
-                    ${isActive 
-                      ? 'bg-secondary text-white shadow-md' 
+                    ${isActive
+                      ? 'bg-secondary text-white shadow-md'
                       : 'text-gray-300 hover:bg-gray-800 hover:text-white'}
                   `}
                 >
@@ -102,10 +110,10 @@ const AdminLayout = () => {
               <p className="text-[10px] text-gray-400">Administrator</p>
             </div>
           </div>
-          <Button 
-            variant="danger" 
-            className="w-full text-xs py-2" 
-            icon={LogOut} 
+          <Button
+            variant="danger"
+            className="w-full text-xs py-2"
+            icon={LogOut}
             onClick={handleLogout}
           >
             Log Out
@@ -118,7 +126,7 @@ const AdminLayout = () => {
         {/* Header Console */}
         <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6 shrink-0">
           <div className="flex items-center gap-4">
-            <button 
+            <button
               className="p-1 rounded-md text-text-secondary hover:bg-gray-100 md:hidden"
               onClick={toggleSidebar}
             >
@@ -147,7 +155,7 @@ const AdminLayout = () => {
       {/* Global Toast Notification */}
       {toast && (
         <div className="fixed bottom-5 right-5 z-50 animate-in slide-in-from-bottom-5">
-          <div 
+          <div
             className={`
               px-5 py-3 rounded-md shadow-md border text-sm font-semibold flex items-center gap-3
               ${toast.type === 'success' ? 'bg-green-50 text-green-700 border-green-200' : ''}

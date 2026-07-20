@@ -6,7 +6,6 @@ import * as z from 'zod';
 import { useAuthStore } from '../../../store/authStore';
 import { resetAdminPassword, getFriendlyAuthError } from '../../../firebase/auth';
 import {
-  Compass,
   KeyRound,
   AlertCircle,
   Eye,
@@ -16,6 +15,7 @@ import {
   Send,
   ArrowLeft,
 } from 'lucide-react';
+import logo from '../../../assets/logo.png';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -119,21 +119,23 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-primary flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-slate-200 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Decorative blobs */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-200/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-200/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
 
       <div className="w-full max-w-md relative z-10 space-y-6">
 
         {/* Logo block */}
         <div className="flex flex-col items-center gap-3">
-          <div className="bg-secondary text-white p-3.5 rounded-xl shadow-lg shadow-secondary/30">
-            <Compass className="w-8 h-8" />
-          </div>
+          <img 
+            src={logo} 
+            alt="Lasso Int'l Education Consultancy" 
+            className="h-28 w-28 object-contain drop-shadow-md"
+          />
           <div className="text-center">
-            <h1 className="text-2xl font-extrabold text-white tracking-wide">LASSO CONSULTANCY</h1>
-            <p className="text-xs text-white/50 font-semibold uppercase tracking-widest mt-0.5">
+            <h1 className="text-2xl font-extrabold text-primary tracking-wide">LASSO CONSULTANCY</h1>
+            <p className="text-xs text-slate-500 font-semibold uppercase tracking-widest mt-0.5">
               Admin Control Panel
             </p>
           </div>

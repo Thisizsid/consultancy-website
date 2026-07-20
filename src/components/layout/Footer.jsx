@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Compass, Mail, Phone, MapPin, Clock } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock } from 'lucide-react';
+import logo from '../../assets/logo.png';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -9,14 +10,21 @@ const Footer = () => {
     <footer className="bg-primary text-white border-t border-gray-800">
       <div className="max-w-container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
-          
+
           {/* Logo & Tagline */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="bg-secondary text-white p-2 rounded-md">
-                <Compass className="w-5 h-5" />
+            <Link to="/" className="flex items-center gap-3.5">
+              <div className="bg-white p-1 rounded-full shadow-xl ring-2 ring-white/20 shrink-0">
+                <img
+                  src={logo}
+                  alt="Lasso Int'l Education Consultancy"
+                  className="h-18 w-18 md:h-20 md:w-20 object-contain rounded-full"
+                />
               </div>
-              <span className="text-xl font-extrabold tracking-tight">LASSO</span>
+              <div>
+                <span className="text-3xl font-black tracking-tight text-white block leading-none">LASSO</span>
+                <span className="text-[11px] block font-bold text-secondary mt-1 tracking-wider uppercase leading-none">Int'l Education Consultancy</span>
+              </div>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed">
               "Connecting Students to Global Opportunities"
