@@ -34,7 +34,7 @@ const Navbar = () => {
     { name: 'Services', path: '/services' },
     { name: 'Events', path: '/events' },
     { name: 'Gallery', path: '/gallery' },
-    { name: 'Contact', path: '/contact' },
+    { name: 'Branches', path: '/branches' },
   ];
 
   const isHomePage = location.pathname === '/';

@@ -11,6 +11,7 @@ import Services from './pages/Services';
 import Events from './pages/Events';
 import Gallery from './pages/Gallery';
 import Contact from './pages/Contact';
+import Branches from './pages/Branches';
 
 // Admin Layout & Pages
 import AdminLayout from './admin/layout/AdminLayout';
@@ -25,6 +26,7 @@ import EnquiriesCMS from './admin/pages/EnquiriesCMS';
 import BranchesCMS from './admin/pages/BranchesCMS';
 import GalleryCMS from './admin/pages/GalleryCMS';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import ResetPassword from './admin/pages/ResetPassword';
 
 function App() {
   const { initAuthListener } = useAuthStore();
@@ -48,10 +50,12 @@ function App() {
           <Route path="events" element={<Events />} />
           <Route path="gallery" element={<Gallery />} />
           <Route path="contact" element={<Contact />} />
+          <Route path="branches" element={<Branches />} />
         </Route>
 
         {/* Admin Login Route */}
         <Route path="/admin/login" element={<Login />} />
+        <Route path="/admin/reset-password" element={<ResetPassword />} />
 
         {/* Admin Dashboard Protected Routes */}
         <Route

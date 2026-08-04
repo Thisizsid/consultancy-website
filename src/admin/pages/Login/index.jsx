@@ -77,15 +77,6 @@ const Login = () => {
     defaultValues: { email: '', password: '' },
   });
 
-  const {
-    register: registerReset,
-    handleSubmit: handleResetSubmit,
-    formState: { errors: resetErrors },
-    reset: resetResetForm,
-  } = useForm({
-    resolver: zodResolver(resetSchema),
-    defaultValues: { resetEmail: '' },
-  });
 
   const onSubmit = async (data) => {
     if (isLocked) return;
@@ -105,11 +96,11 @@ const Login = () => {
     }
   };
 
-  const onResetSubmit = async (data) => {
+  const onResetClick = async () => {
     setResetError(null);
     setResetLoading(true);
     try {
-      await resetAdminPassword(data.resetEmail);
+      await resetAdminPassword();
       setResetSent(true);
     } catch (error) {
       setResetError(getFriendlyAuthError(error));
@@ -275,11 +266,11 @@ const Login = () => {
                 </form>
               </>
             ) : (
-              /* ─── FORGOT PASSWORD FORM ─── */
+              /* ─── FORGOT PASSWORD PANEL ─── */
               <>
                 <button
                   type="button"
-                  onClick={() => { setShowReset(false); setResetSent(false); setResetError(null); resetResetForm(); }}
+                  onClick={() => { setShowReset(false); setResetSent(false); setResetError(null); }}
                   className="flex items-center gap-1 text-xs text-text-secondary hover:text-primary font-semibold mb-5 transition-colors"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" /> Back to Sign In
@@ -291,8 +282,9 @@ const Login = () => {
                       <h2 className="text-xl font-bold text-primary flex items-center gap-2">
                         <Mail className="w-5 h-5 text-secondary" /> Reset Password
                       </h2>
-                      <p className="text-xs text-text-secondary mt-1">
-                        Enter the email address linked to your admin account and we'll send a reset link.
+                      <p className="text-xs text-text-secondary mt-1 leading-relaxed">
+                        Click the button below and a password reset link will be sent to
+                        <strong> lassoconsultancy4@gmail.com</strong>.
                       </p>
                     </div>
 
@@ -303,49 +295,28 @@ const Login = () => {
                       </div>
                     )}
 
-                    <form onSubmit={handleResetSubmit(onResetSubmit)} className="space-y-4">
-                      <div className="space-y-1">
-                        <label className="block text-xs font-semibold text-text-primary uppercase tracking-wider">
-                          Admin Email
-                        </label>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                          <input
-                            type="email"
-                            placeholder="admin@yourcompany.com"
-                            {...registerReset('resetEmail')}
-                            className={`w-full pl-9 pr-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/40 focus:border-secondary transition-colors ${
-                              resetErrors.resetEmail ? 'border-red-400 bg-red-50' : 'border-gray-300'
-                            }`}
-                          />
-                        </div>
-                        {resetErrors.resetEmail && (
-                          <p className="text-xs text-red-600">{resetErrors.resetEmail.message}</p>
-                        )}
-                      </div>
-
-                      <button
-                        type="submit"
-                        disabled={resetLoading}
-                        className="w-full py-3 rounded-lg bg-secondary text-white font-semibold text-sm
-                          hover:bg-secondary-dark active:scale-[0.98] transition-all duration-200
-                          disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                      >
-                        {resetLoading ? (
-                          <>
-                            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                            </svg>
-                            Sending…
-                          </>
-                        ) : (
-                          <>
-                            <Send className="w-4 h-4" /> Send Reset Link
-                          </>
-                        )}
-                      </button>
-                    </form>
+                    <button
+                      type="button"
+                      onClick={onResetClick}
+                      disabled={resetLoading}
+                      className="w-full py-3 rounded-lg bg-secondary text-white font-semibold text-sm
+                        hover:bg-secondary-dark active:scale-[0.98] transition-all duration-200
+                        disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {resetLoading ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          Sending…
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4" /> Send Reset Link
+                        </>
+                      )}
+                    </button>
                   </>
                 ) : (
                   /* ─── RESET SENT CONFIRMATION ─── */
@@ -354,13 +325,14 @@ const Login = () => {
                       <Mail className="w-8 h-8 text-secondary" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-primary text-lg">Check your inbox</h3>
+                      <h3 className="font-bold text-primary text-lg">Reset Link Sent!</h3>
                       <p className="text-xs text-text-secondary mt-1 leading-relaxed">
-                        A password reset link has been sent to your email address. It may take a minute to arrive.
+                        A password reset link has been sent to <strong>lassoconsultancy4@gmail.com</strong>.
+                        Check your inbox and click the link to set a new password.
                       </p>
                     </div>
                     <button
-                      onClick={() => { setShowReset(false); setResetSent(false); resetResetForm(); }}
+                      onClick={() => { setShowReset(false); setResetSent(false); }}
                       className="text-sm text-secondary font-semibold hover:underline"
                     >
                       Return to Sign In
@@ -374,7 +346,7 @@ const Login = () => {
           {/* Card footer */}
           <div className="px-8 py-4 bg-surface border-t border-gray-100 flex items-center justify-between">
             <p className="text-[11px] text-text-muted">
-              🔒 Secured by Firebase Authentication
+              🔒 Secured Admin Authentication
             </p>
             <a href="/" className="text-[11px] text-secondary font-semibold hover:underline">
               ← Public Site

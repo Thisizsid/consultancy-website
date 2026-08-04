@@ -20,14 +20,7 @@ import {
   CheckCircle,
   HelpCircle,
   ChevronLeft,
-  ChevronRight,
-  MapPin,
-  Phone,
-  Mail,
-  Clock,
-  GitBranch,
-  ImageIcon,
-  ZoomIn
+  ChevronRight
 } from 'lucide-react';
 import { getAllDocuments, createDocument } from '../../firebase/firestore';
 import Button from '../../components/ui/Button';
@@ -61,8 +54,6 @@ const Home = () => {
   const [testimonials, setTestimonials] = useState([]);
   const [events, setEvents] = useState([]);
   const [partners, setPartners] = useState([]);
-  const [branches, setBranches] = useState([]);
-  const [galleryPhotos, setGalleryPhotos] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -134,14 +125,12 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [cnts, srvs, tstms, evts, ptns, brchs, glry] = await Promise.all([
+        const [cnts, srvs, tstms, evts, ptns] = await Promise.all([
           getAllDocuments('countries'),
           getAllDocuments('services'),
           getAllDocuments('testimonials'),
           getAllDocuments('events'),
           getAllDocuments('partners'),
-          getAllDocuments('branches'),
-          getAllDocuments('gallery'),
         ]);
         
         setCountries(cnts.filter(c => c.visible !== false));
@@ -149,14 +138,6 @@ const Home = () => {
         setTestimonials(tstms.slice(0, 3));
         setEvents(evts.filter(e => e.status === 'upcoming').slice(0, 3));
         setPartners(ptns);
-        setBranches(brchs.filter(b => b.status === 'active'));
-        // Sort gallery by newest, take first 6
-        const sortedGallery = glry.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt) : 0;
-          const dateB = b.createdAt ? new Date(b.createdAt) : 0;
-          return dateB - dateA;
-        });
-        setGalleryPhotos(sortedGallery.slice(0, 6));
       } catch (error) {
         console.error('Error fetching landing data:', error);
       } finally {
@@ -558,122 +539,8 @@ const Home = () => {
         </div>
       </section>
 
-      {/* PHOTO GALLERY PREVIEW SECTION */}
-      {galleryPhotos.length > 0 && (
-        <section className="py-20 md:py-24 bg-surface">
-          <div className="max-w-container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
-              <div className="space-y-3 max-w-xl">
-                <Badge variant="info">PHOTO GALLERY</Badge>
-                <h2 className="text-3xl md:text-4xl font-extrabold text-primary">Moments & Memories</h2>
-                <p className="text-text-secondary leading-relaxed">
-                  Explore highlights from our seminars, student sessions, and office events.
-                </p>
-              </div>
-              <Link to="/gallery">
-                <Button variant="outline" size="md">
-                  View Full Gallery
-                </Button>
-              </Link>
-            </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {galleryPhotos.map((photo, idx) => (
-                <Link
-                  to="/gallery"
-                  key={photo.id}
-                  className="group relative rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-500 bg-white"
-                >
-                  <div className={`overflow-hidden ${idx === 0 ? 'aspect-[4/3]' : 'aspect-square'}`}>
-                    <img
-                      src={photo.imageUrl}
-                      alt={photo.caption}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-4">
-                    <div className="transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500">
-                      <p className="text-white text-sm font-semibold leading-snug">
-                        {photo.caption}
-                      </p>
-                    </div>
-                    <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transform scale-75 group-hover:scale-100 transition-all duration-500">
-                      <ZoomIn className="w-4 h-4 text-white" />
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
-      {/* 8. BRANCHES SECTION */}
-      {branches.length > 0 && (
-        <section className="py-20 md:py-24 bg-white">
-          <div className="max-w-container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-              <Badge variant="success">OUR BRANCHES</Badge>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-primary">
-                Find a Branch Near You
-              </h2>
-              <p className="text-text-secondary leading-relaxed">
-                Visit any of our conveniently located offices and speak directly with our expert counselors.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {branches.map((branch) => (
-                <div
-                  key={branch.id}
-                  className="group bg-white border border-gray-150 rounded-lg p-6 flex flex-col gap-4 shadow-sm hover:shadow-md hover:border-secondary/30 transition-all duration-300"
-                >
-                  {/* Branch Header */}
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-md bg-secondary/10 flex items-center justify-center shrink-0 group-hover:bg-secondary/20 transition-colors">
-                      <GitBranch className="w-5 h-5 text-secondary" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-text-primary text-base leading-snug">{branch.name}</h3>
-                      <p className="text-xs text-secondary font-semibold mt-0.5">{branch.city}</p>
-                    </div>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="h-px bg-gray-100" />
-
-                  {/* Details */}
-                  <div className="space-y-2.5 text-xs text-text-secondary">
-                    <div className="flex items-start gap-2">
-                      <MapPin className="w-3.5 h-3.5 text-accent shrink-0 mt-0.5" />
-                      <span>{branch.address}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-3.5 h-3.5 text-secondary shrink-0" />
-                      <a href={`tel:${branch.phone}`} className="hover:text-secondary transition-colors">
-                        {branch.phone}
-                      </a>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-3.5 h-3.5 text-secondary shrink-0" />
-                      <a href={`mailto:${branch.email}`} className="hover:text-secondary transition-colors truncate">
-                        {branch.email}
-                      </a>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-accent shrink-0" />
-                      <span>{branch.openingHours}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* 9. EVENTS SECTION */}
       {events.length > 0 && (
         <section className="py-20 md:py-24">
           <div className="max-w-container mx-auto px-4 sm:px-6 lg:px-8">

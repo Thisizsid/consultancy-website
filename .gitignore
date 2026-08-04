@@ -27,7 +27,20 @@ dist-ssr
 .env
 .env.production
 .env.development
+server/.env
 
 # Tooling outputs and cache
 .claude/
 graphify-out/
+
+# Build / deployment artifacts
+dist.zip
+frontend_update.zip
+server_upload.zip
+*.zip
+
+# Server (backend — tracked separately)
+server/
+
+# Generated server config
+public/.htaccess
