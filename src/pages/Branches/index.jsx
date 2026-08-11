@@ -31,7 +31,7 @@ const Branches = () => {
   return (
     <div className="overflow-hidden">
       {/* PAGE HERO */}
-      <section className="relative bg-gradient-to-br from-primary via-primary-light to-accent text-white pt-40 pb-24">
+      <section className="relative bg-gradient-to-br from-primary via-primary-light to-accent text-white pt-32 pb-16 md:pt-40 md:pb-24">
         <div className="absolute inset-0 opacity-10 pointer-events-none"
           style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }}
         />

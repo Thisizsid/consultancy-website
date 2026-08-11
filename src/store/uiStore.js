@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 
 export const useUiStore = create((set) => ({
-  sidebarOpen: true,
+  // Start collapsed on mobile so the drawer doesn't cover content on load.
+  // At md+ the sidebar is statically positioned, so this flag is ignored there.
+  sidebarOpen: typeof window === 'undefined' || window.innerWidth >= 768,
   loading: false,
   theme: 'light',
   toast: null, // { message, type: 'success' | 'error' | 'info' }

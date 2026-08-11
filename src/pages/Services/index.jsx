@@ -72,7 +72,7 @@ const Services = () => {
             {services.map((s, idx) => {
               const ServiceIcon = iconMap[s.icon] || Compass;
               return (
-                <Card key={idx} className="bg-white p-8 flex flex-col justify-between h-full border border-gray-150 hover:border-gray-200 transition-all">
+                <Card key={idx} className="bg-white p-6 md:p-8 flex flex-col justify-between h-full border border-gray-150 hover:border-gray-200 transition-all">
                   <div className="space-y-4">
                     <div className="w-12 h-12 rounded-md bg-blue-50 text-secondary flex items-center justify-center">
                       <ServiceIcon className="w-6 h-6" />

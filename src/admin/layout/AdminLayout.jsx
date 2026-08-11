@@ -1,5 +1,5 @@
-import React from 'react';
-import { NavLink, useNavigate, Outlet, Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { NavLink, useNavigate, useLocation, Outlet, Link } from 'react-router-dom';
 import {
   LayoutDashboard,
   Globe,
@@ -22,8 +22,14 @@ import logo from '../../assets/logo.png';
 
 const AdminLayout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuthStore();
-  const { sidebarOpen, toggleSidebar, toast, clearToast } = useUiStore();
+  const { sidebarOpen, toggleSidebar, setSidebarOpen, toast, clearToast } = useUiStore();
+
+  // Collapse the mobile drawer after navigating so it doesn't cover the new page
+  useEffect(() => {
+    if (window.innerWidth < 768) setSidebarOpen(false);
+  }, [location.pathname, setSidebarOpen]);
 
   const handleLogout = async () => {
     try {
@@ -50,6 +56,15 @@ const AdminLayout = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
+      {/* Mobile drawer backdrop — tap outside to dismiss */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-20 bg-primary/50 backdrop-blur-sm md:hidden"
+          onClick={toggleSidebar}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Sidebar Drawer */}
       <aside
         className={`
@@ -58,7 +73,7 @@ const AdminLayout = () => {
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
-        <div>
+        <div className="flex-1 overflow-y-auto">
           {/* Sidebar Header */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800">
             <Link to="/" className="flex items-center gap-2.5">
@@ -124,7 +139,7 @@ const AdminLayout = () => {
       {/* Main Panel Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header Console */}
-        <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6 shrink-0">
+        <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 md:px-6 shrink-0">
           <div className="flex items-center gap-4">
             <button
               className="p-1 rounded-md text-text-secondary hover:bg-gray-100 md:hidden"
@@ -147,14 +162,14 @@ const AdminLayout = () => {
         </header>
 
         {/* Dynamic Nested View Outlet */}
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
           <Outlet />
         </main>
       </div>
 
       {/* Global Toast Notification */}
       {toast && (
-        <div className="fixed bottom-5 right-5 z-50 animate-in slide-in-from-bottom-5">
+        <div className="fixed bottom-5 right-4 left-4 md:left-auto md:right-5 z-50 animate-in slide-in-from-bottom-5">
           <div
             className={`
               px-5 py-3 rounded-md shadow-md border text-sm font-semibold flex items-center gap-3

@@ -18,7 +18,7 @@ const Footer = () => {
                 <img
                   src={logo}
                   alt="Lasso Int'l Education Consultancy"
-                  className="h-18 w-18 md:h-20 md:w-20 object-contain rounded-full"
+                  className="h-16 w-16 md:h-20 md:w-20 object-contain rounded-full"
                 />
               </div>
               <div>
@@ -100,7 +100,7 @@ const Footer = () => {
 
         <div className="border-t border-gray-800 mt-16 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-500">
           <p>&copy; {currentYear} Lasso Consultancy. All rights reserved.</p>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             <Link to="/admin/login" className="hover:text-white transition-colors">Admin Console</Link>
             <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-white transition-colors">Terms of Service</a>

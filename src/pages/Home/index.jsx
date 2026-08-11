@@ -171,7 +171,7 @@ const Home = () => {
   return (
     <div className="overflow-hidden">
       {/* 1. HERO SECTION SLIDER */}
-      <section className="relative h-[80vh] min-h-[550px] w-full bg-slate-950 overflow-hidden pt-20">
+      <section className="relative h-[80vh] min-h-[620px] w-full bg-slate-950 overflow-hidden">
         
         {/* Slides */}
         <div className="absolute inset-0 w-full h-full">
@@ -193,7 +193,8 @@ const Home = () => {
                 />
                 
                 {/* Content Container */}
-                <div className="absolute inset-0 z-20 flex items-center">
+                {/* Top padding clears the transparent fixed navbar on small screens */}
+                <div className="absolute inset-0 z-20 flex items-center pt-28 pb-16 md:pt-20 md:pb-0">
                   <div className="max-w-container mx-auto px-4 sm:px-6 lg:px-8 w-full">
                     <div className="max-w-3xl space-y-6 text-left">
                       
@@ -450,23 +451,23 @@ const Home = () => {
             </div>
 
             {/* Right Decorative Grid */}
-            <div className="grid grid-cols-2 gap-6">
-              <div className="bg-secondary/5 border border-secondary/15 p-8 rounded-lg space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="bg-secondary/5 border border-secondary/15 p-6 md:p-8 rounded-lg space-y-3">
                 <Users className="w-8 h-8 text-secondary" />
                 <h4 className="font-bold text-primary">5,000+ Students</h4>
                 <p className="text-xs text-text-secondary">Placed in top QS-ranked global schools.</p>
               </div>
-              <div className="bg-accent/5 border border-accent/15 p-8 rounded-lg space-y-3 mt-6">
+              <div className="bg-accent/5 border border-accent/15 p-6 md:p-8 rounded-lg space-y-3 sm:mt-6">
                 <Globe2 className="w-8 h-8 text-accent" />
                 <h4 className="font-bold text-primary">15+ Nations</h4>
                 <p className="text-xs text-text-secondary">Worldwide study destinations available.</p>
               </div>
-              <div className="bg-secondary/5 border border-secondary/15 p-8 rounded-lg space-y-3 -mt-6">
+              <div className="bg-secondary/5 border border-secondary/15 p-6 md:p-8 rounded-lg space-y-3 sm:-mt-6">
                 <BookOpen className="w-8 h-8 text-secondary-dark" />
                 <h4 className="font-bold text-primary">Scholarships</h4>
                 <p className="text-xs text-text-secondary">Direct assistance with institutional aid.</p>
               </div>
-              <div className="bg-accent/5 border border-accent/15 p-8 rounded-lg space-y-3">
+              <div className="bg-accent/5 border border-accent/15 p-6 md:p-8 rounded-lg space-y-3">
                 <ShieldCheck className="w-8 h-8 text-accent-light" />
                 <h4 className="font-bold text-primary">End-to-End</h4>
                 <p className="text-xs text-text-secondary">Right from passport to pre-departure lodging.</p>
@@ -610,7 +611,7 @@ const Home = () => {
             </div>
 
             {/* Form Right Block */}
-            <div className="lg:col-span-7 bg-white text-text-primary p-8 rounded-lg shadow-xl border border-white/10 relative">
+            <div className="lg:col-span-7 bg-white text-text-primary p-6 md:p-8 rounded-lg shadow-xl border border-white/10 relative">
               <h3 className="text-2xl font-bold text-primary mb-6">Book Free Consultation</h3>
               
               {submitSuccess ? (

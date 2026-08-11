@@ -143,7 +143,7 @@ const Contact = () => {
           </div>
 
           {/* Right Column - Contact Form */}
-          <div className="lg:col-span-7 bg-white p-8 rounded-lg border border-gray-150 shadow-sm">
+          <div className="lg:col-span-7 bg-white p-6 md:p-8 rounded-lg border border-gray-150 shadow-sm">
             <h3 className="text-2xl font-bold text-primary mb-2">Send Message</h3>
             <p className="text-sm text-text-secondary mb-6">
               Complete the profile fields below and our counselors will get in touch with you shortly.
