@@ -3,7 +3,7 @@ import {
   signInAdmin,
   signOutAdmin,
   subscribeToAuthChanges,
-} from '../firebase/auth';
+} from '../services/auth';
 
 export const useAuthStore = create((set, get) => ({
   user: null,

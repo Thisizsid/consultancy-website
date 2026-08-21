@@ -60,6 +60,13 @@ export const resetPasswordApi = async (token, newPassword) => {
   });
 };
 
+export const changePasswordApi = async (currentPassword, newPassword) => {
+  return await apiRequest('/auth/change-password', {
+    method: 'PUT',
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+};
+
 // --- FILE UPLOAD API ---
 export const uploadFileApi = async (file) => {
   if (!file || typeof file === 'string') {

@@ -7,8 +7,8 @@ import {
   createDocument, 
   updateDocument, 
   deleteDocument 
-} from '../../../firebase/firestore';
-import { uploadFile } from '../../../firebase/storage';
+} from '../../../services/api';
+import { uploadFileApi as uploadFile } from '../../../services/api';
 import { MessageSquare, Plus, Edit2, Trash2, Star } from 'lucide-react';
 import Card, { CardBody } from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';

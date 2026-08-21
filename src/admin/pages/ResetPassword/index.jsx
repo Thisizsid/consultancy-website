@@ -3,8 +3,8 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { completePasswordReset } from '../../../firebase/auth';
-import { KeyRound, Eye, EyeOff, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
+import { completePasswordReset } from '../../../services/auth';
+import { KeyRound, Eye, EyeOff, CheckCircle2, AlertCircle, ArrowLeft, ShieldCheck } from 'lucide-react';
 import logo from '../../../assets/logo.png';
 
 const resetSchema = z.object({
@@ -187,8 +187,9 @@ const ResetPassword = () => {
                     </button>
 
                     <div className="text-center">
-                      <Link to="/admin/login" className="text-xs text-secondary font-semibold hover:underline">
-                        ← Back to Sign In
+                      <Link to="/admin/login" className="text-xs text-secondary font-semibold hover:underline inline-flex items-center gap-1">
+                        <ArrowLeft className="w-3.5 h-3.5" />
+                        Back to Sign In
                       </Link>
                     </div>
                   </form>
@@ -198,8 +199,14 @@ const ResetPassword = () => {
           </div>
 
           <div className="px-8 py-4 bg-surface border-t border-gray-100 flex items-center justify-between">
-            <p className="text-[11px] text-text-muted">🔒 Secured Admin Authentication</p>
-            <a href="/" className="text-[11px] text-secondary font-semibold hover:underline">← Public Site</a>
+            <p className="text-[11px] text-text-muted flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-secondary" />
+              Secured Admin Authentication
+            </p>
+            <a href="/" className="text-[11px] text-secondary font-semibold hover:underline inline-flex items-center gap-1">
+              <ArrowLeft className="w-3 h-3" />
+              Public Site
+            </a>
           </div>
         </div>
       </div>

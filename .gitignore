@@ -23,11 +23,15 @@ dist-ssr
 *.sln
 *.sw?
 
-# Local environment variables
+# Local environment variables — .env.production is NOT listed here:
+# it holds only the public VITE_API_URL (no secrets) and is required for
+# `npm run build` to produce a working production bundle on a fresh clone.
 .env
-.env.production
+.env.local
+.env.*.local
 .env.development
 server/.env
+server/.env.local
 
 # Tooling outputs and cache
 .claude/
@@ -39,8 +43,23 @@ frontend_update.zip
 server_upload.zip
 *.zip
 
-# Server (backend — tracked separately)
-server/
+# Server (backend) — track source, exclude secrets, data and artifacts
+server/node_modules/
+server/database.sqlite
+server/uploads/
+
+# SQLite data files anywhere in the repo, plus WAL-mode sidecar files
+*.sqlite
+*.sqlite3
+*.db
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
+# Vercel CLI local project link (contains org/project IDs)
+.vercel
 
 # Generated server config
 public/.htaccess
+.env.bak*
+NEW_ADMIN_PASSWORD.txt

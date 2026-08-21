@@ -6,7 +6,7 @@ import * as z from 'zod';
 import { 
   getCountryBySlug, 
   createDocument 
-} from '../../firebase/firestore';
+} from '../../services/api';
 import { 
   ArrowLeft, 
   DollarSign, 
@@ -23,6 +23,7 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Card, { CardBody } from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
+import CountryFlag from '../../components/ui/CountryFlag';
 import { useUiStore } from '../../store/uiStore';
 
 // Zod validation schema for enquiry form
@@ -130,7 +131,7 @@ const CountryDetail = () => {
             <ArrowLeft className="w-4 h-4" /> Back to Countries
           </Link>
           <div className="flex items-center gap-4">
-            <span className="text-4xl md:text-5xl">{country.flag}</span>
+            <CountryFlag code={country.flagCode} title={country.name} className="w-12 md:w-14 rounded shadow-sm" />
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">{country.name} Requirements</h1>
           </div>
           <p className="text-gray-300 text-lg mt-4 max-w-3xl leading-relaxed">

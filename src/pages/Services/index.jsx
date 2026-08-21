@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getAllDocuments } from '../../firebase/firestore';
+import { getAllDocuments } from '../../services/api';
 import { 
   Compass, 
   School, 

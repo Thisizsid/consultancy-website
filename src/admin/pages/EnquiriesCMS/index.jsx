@@ -3,7 +3,7 @@ import {
   getAllDocuments,
   updateDocument,
   deleteDocument,
-} from '../../../firebase/firestore';
+} from '../../../services/api';
 import {
   Inbox,
   Trash2,

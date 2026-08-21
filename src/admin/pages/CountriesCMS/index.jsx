@@ -7,12 +7,14 @@ import {
   createDocument, 
   updateDocument, 
   deleteDocument 
-} from '../../../firebase/firestore';
-import { uploadFile } from '../../../firebase/storage';
+} from '../../../services/api';
+import { uploadFileApi as uploadFile } from '../../../services/api';
 import { Globe, Plus, Edit2, Trash2, Eye, EyeOff, Search } from 'lucide-react';
 import Card, { CardBody } from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import Badge from '../../../components/ui/Badge';
+import CountryFlag from '../../../components/ui/CountryFlag';
+import { COMMON_COUNTRY_CODES } from '../../../constants/countryCodes';
 import Table, { TableRow, TableCell } from '../../../components/ui/Table';
 import Modal from '../../../components/ui/Modal';
 import Input from '../../../components/ui/Input';
@@ -24,7 +26,7 @@ import ConfirmDialog from '../../../components/ui/ConfirmDialog';
 const countryFormSchema = z.object({
   name: z.string().min(2, 'Country name must be at least 2 characters'),
   slug: z.string().min(2, 'Slug must be at least 2 characters').regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric and hyphens only'),
-  flag: z.string().min(1, 'Please enter a flag emoji (e.g. 🇨🇦)'),
+  flagCode: z.string().trim().regex(/^[A-Za-z]{2}$/, 'Enter a 2-letter country code, e.g. CA').transform((v) => v.toUpperCase()),
   image: z.any().optional(),
   imageUrl: z.string().url('Please enter a valid image URL').or(z.string().length(0)),
   description: z.string().min(10, 'Description must be at least 10 characters'),
@@ -52,7 +54,7 @@ const CountriesCMS = () => {
     defaultValues: {
       name: '',
       slug: '',
-      flag: '',
+      flagCode: '',
       imageUrl: '',
       description: '',
       popularCourses: '',
@@ -85,7 +87,7 @@ const CountriesCMS = () => {
     reset({
       name: countryItem.name,
       slug: countryItem.slug,
-      flag: countryItem.flag,
+      flagCode: countryItem.flagCode || '',
       imageUrl: countryItem.image || '',
       description: countryItem.description,
       popularCourses: countryItem.popularCourses,
@@ -102,7 +104,7 @@ const CountriesCMS = () => {
     reset({
       name: '',
       slug: '',
-      flag: '',
+      flagCode: '',
       imageUrl: '',
       description: '',
       popularCourses: '',
@@ -171,7 +173,7 @@ const CountriesCMS = () => {
       const savePayload = {
         name: formData.name,
         slug: formData.slug,
-        flag: formData.flag,
+        flagCode: formData.flagCode,
         image: finalImageUrl,
         description: formData.description,
         popularCourses: formData.popularCourses,
@@ -265,7 +267,7 @@ const CountriesCMS = () => {
         <Table headers={['Flag', 'Name', 'Slug', 'Tuition Rate', 'Visible', 'Actions']}>
           {filteredCountries.map((c) => (
             <TableRow key={c.id}>
-              <TableCell className="text-2xl">{c.flag}</TableCell>
+              <TableCell><CountryFlag code={c.flagCode} title={c.name} className="w-7 rounded-sm" /></TableCell>
               <TableCell className="font-bold text-text-primary">{c.name}</TableCell>
               <TableCell className="font-mono text-xs text-text-secondary">{c.slug}</TableCell>
               <TableCell>{c.tuitionFees?.split('/')[0] || 'N/A'}</TableCell>
@@ -322,12 +324,26 @@ const CountriesCMS = () => {
               {...register('slug')}
               error={errors.slug?.message}
             />
-            <Input 
-              label="Flag Emoji" 
-              placeholder="e.g. 🇨🇦"
-              {...register('flag')}
-              error={errors.flag?.message}
-            />
+            <div>
+              <label className="block text-sm font-semibold text-text-primary mb-1.5">
+                Country Flag
+              </label>
+              <div className="flex items-center gap-2">
+                <select
+                  className="w-full px-4 py-2 border rounded-md shadow-sm bg-white border-gray-300 text-text-primary focus:ring-2 focus:ring-secondary focus:border-secondary transition-colors"
+                  {...register('flagCode')}
+                >
+                  <option value="">-- Select country --</option>
+                  {COMMON_COUNTRY_CODES.map(({ code, name }) => (
+                    <option key={code} value={code}>{name} ({code})</option>
+                  ))}
+                </select>
+                <CountryFlag code={watch('flagCode')} className="w-8 rounded-sm shrink-0" />
+              </div>
+              {errors.flagCode && (
+                <p className="mt-1 text-xs text-red-600 font-medium">{errors.flagCode.message}</p>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

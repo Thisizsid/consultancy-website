@@ -10,12 +10,13 @@ import {
   ArrowRight,
   TrendingUp,
   Sparkles,
-  Inbox
+  Inbox,
+  MapPin
 } from 'lucide-react';
 import Card, { CardHeader, CardBody, CardFooter } from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import Badge from '../../../components/ui/Badge';
-import { getAllDocuments } from '../../../firebase/firestore';
+import { getAllDocuments } from '../../../services/api';
 
 const Dashboard = () => {
   const { stats, fetchStats, loadingStats } = useDashboardStore();
@@ -151,7 +152,7 @@ const Dashboard = () => {
                       <div className="space-y-1 max-w-lg">
                         <h4 className="font-bold text-text-primary text-sm">{e.title}</h4>
                         <p className="text-xs text-text-secondary line-clamp-2">{e.description}</p>
-                        <p className="text-[10px] text-accent font-semibold">📍 Venue: {e.location}</p>
+                        <p className="text-[10px] text-accent font-semibold flex items-center gap-1"><MapPin className="w-3 h-3 shrink-0" /> Venue: {e.location}</p>
                       </div>
                       <div className="shrink-0 flex items-center gap-2">
                         <Badge variant="info">{e.date}</Badge>

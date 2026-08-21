@@ -7,7 +7,7 @@ import {
   Clock,
   Building2,
 } from 'lucide-react';
-import { getAllDocuments } from '../../firebase/firestore';
+import { getAllDocuments } from '../../services/api';
 import Badge from '../../components/ui/Badge';
 
 const Branches = () => {

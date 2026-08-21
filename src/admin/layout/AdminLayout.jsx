@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, useNavigate, useLocation, Outlet, Link } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -13,18 +13,21 @@ import {
   Eye,
   Inbox,
   GitBranch,
-  ImageIcon
+  ImageIcon,
+  KeyRound
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useUiStore } from '../../store/uiStore';
 import Button from '../../components/ui/Button';
 import logo from '../../assets/logo.png';
+import ChangePasswordModal from '../components/ChangePasswordModal';
 
 const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
   const { sidebarOpen, toggleSidebar, setSidebarOpen, toast, clearToast } = useUiStore();
+  const [pwModalOpen, setPwModalOpen] = useState(false);
 
   // Collapse the mobile drawer after navigating so it doesn't cover the new page
   useEffect(() => {
@@ -126,6 +129,14 @@ const AdminLayout = () => {
             </div>
           </div>
           <Button
+            variant="outline"
+            className="w-full text-xs py-2 mb-2 border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
+            icon={KeyRound}
+            onClick={() => setPwModalOpen(true)}
+          >
+            Change Password
+          </Button>
+          <Button
             variant="danger"
             className="w-full text-xs py-2"
             icon={LogOut}
@@ -166,6 +177,8 @@ const AdminLayout = () => {
           <Outlet />
         </main>
       </div>
+
+      <ChangePasswordModal isOpen={pwModalOpen} onClose={() => setPwModalOpen(false)} />
 
       {/* Global Toast Notification */}
       {toast && (

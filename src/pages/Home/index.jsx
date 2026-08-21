@@ -18,15 +18,17 @@ import {
   ArrowRight,
   ShieldCheck,
   CheckCircle,
-  HelpCircle,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Check,
+  MapPin
 } from 'lucide-react';
-import { getAllDocuments, createDocument } from '../../firebase/firestore';
+import { getAllDocuments, createDocument } from '../../services/api';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Card, { CardBody } from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
+import CountryFlag from '../../components/ui/CountryFlag';
 import { useUiStore } from '../../store/uiStore';
 
 // Icons mapping helper for services
@@ -337,8 +339,8 @@ const Home = () => {
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                       loading="lazy"
                     />
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-lg shadow-sm">
-                      {c.flag}
+                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2.5 py-1.5 rounded-full shadow-sm">
+                      <CountryFlag code={c.flagCode} title={c.name} className="w-6 rounded-sm" />
                     </div>
                   </div>
                   <CardBody className="flex-1 flex flex-col justify-between p-6">
@@ -420,7 +422,7 @@ const Home = () => {
               <div className="space-y-4 pt-2">
                 <div className="flex gap-4">
                   <div className="w-6 h-6 rounded-full bg-secondary/15 text-secondary flex items-center justify-center shrink-0 mt-1">
-                    ✓
+                    <Check className="w-3.5 h-3.5" strokeWidth={3} />
                   </div>
                   <div>
                     <h4 className="font-bold text-text-primary">Accredited Counselors</h4>
@@ -430,7 +432,7 @@ const Home = () => {
                 
                 <div className="flex gap-4">
                   <div className="w-6 h-6 rounded-full bg-secondary/15 text-secondary flex items-center justify-center shrink-0 mt-1">
-                    ✓
+                    <Check className="w-3.5 h-3.5" strokeWidth={3} />
                   </div>
                   <div>
                     <h4 className="font-bold text-text-primary">Comprehensive SOP & LOR Review</h4>
@@ -440,7 +442,7 @@ const Home = () => {
 
                 <div className="flex gap-4">
                   <div className="w-6 h-6 rounded-full bg-secondary/15 text-secondary flex items-center justify-center shrink-0 mt-1">
-                    ✓
+                    <Check className="w-3.5 h-3.5" strokeWidth={3} />
                   </div>
                   <div>
                     <h4 className="font-bold text-text-primary">Visa Mock Simulations</h4>
@@ -574,7 +576,7 @@ const Home = () => {
                     </p>
                   </div>
                   <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-                    <span className="text-xs text-text-secondary font-medium">📍 {e.location}</span>
+                    <span className="text-xs text-text-secondary font-medium flex items-center gap-1"><MapPin className="w-3.5 h-3.5 shrink-0" /> {e.location}</span>
                     <Link to="/events" className="text-secondary text-xs font-bold hover:underline">
                       Register Now
                     </Link>
@@ -604,9 +606,9 @@ const Home = () => {
               <div className="h-[1px] bg-slate-800 w-full" />
               
               <div className="space-y-3 text-sm text-gray-300">
-                <p>✓ 100% Confidentiality</p>
-                <p>✓ Comprehensive Profile Evaluation</p>
-                <p>✓ Zero Upfront Consultancy Fees</p>
+                <p className="flex items-center gap-2"><Check className="w-4 h-4 text-secondary shrink-0" strokeWidth={3} /> 100% Confidentiality</p>
+                <p className="flex items-center gap-2"><Check className="w-4 h-4 text-secondary shrink-0" strokeWidth={3} /> Comprehensive Profile Evaluation</p>
+                <p className="flex items-center gap-2"><Check className="w-4 h-4 text-secondary shrink-0" strokeWidth={3} /> Zero Upfront Consultancy Fees</p>
               </div>
             </div>
 

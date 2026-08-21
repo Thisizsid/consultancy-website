@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getAllDocuments } from '../firebase/firestore';
+import { getAllDocuments } from '../services/api';
 
 export const useDashboardStore = create((set, get) => ({
   stats: {

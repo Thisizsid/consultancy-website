@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { createDocument } from '../../firebase/firestore';
-import { Mail, Phone, MapPin, Clock, MessageSquare, CheckCircle } from 'lucide-react';
+import { createDocument } from '../../services/api';
+import { Mail, Phone, MapPin, Clock, MessageSquare, CheckCircle, ArrowRight } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Card, { CardBody } from '../../components/ui/Card';
@@ -132,9 +132,10 @@ const Contact = () => {
                     href="https://maps.google.com" 
                     target="_blank" 
                     rel="noreferrer"
-                    className="text-xs text-secondary font-bold hover:underline block pt-2"
+                    className="text-xs text-secondary font-bold hover:underline pt-2 inline-flex items-center gap-1"
                   >
-                    Open in Google Maps →
+                    Open in Google Maps
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </a>
                 </div>
               </div>

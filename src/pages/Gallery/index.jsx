@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { getAllDocuments } from '../../firebase/firestore';
+import { getAllDocuments } from '../../services/api';
 import { ImageIcon, X, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 import Badge from '../../components/ui/Badge';
 

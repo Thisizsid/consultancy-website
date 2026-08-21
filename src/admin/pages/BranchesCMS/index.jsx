@@ -7,7 +7,7 @@ import {
   createDocument,
   updateDocument,
   deleteDocument,
-} from '../../../firebase/firestore';
+} from '../../../services/api';
 import { GitBranch, Plus, Edit2, Trash2, MapPin, Phone, Mail, Clock } from 'lucide-react';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';

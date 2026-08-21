@@ -1,4 +1,4 @@
-import { loginApi, checkAuthApi, logoutApi, forgotPasswordApi, resetPasswordApi } from '../services/api';
+import { loginApi, checkAuthApi, logoutApi, forgotPasswordApi, resetPasswordApi, changePasswordApi } from './api';
 
 /**
  * Sign in admin user using Node JWT API
@@ -27,6 +27,13 @@ export const resetAdminPassword = async () => {
  */
 export const completePasswordReset = async (token, newPassword) => {
   return await resetPasswordApi(token, newPassword);
+};
+
+/**
+ * Change the password of the currently signed-in admin
+ */
+export const changeAdminPassword = async (currentPassword, newPassword) => {
+  return await changePasswordApi(currentPassword, newPassword);
 };
 
 /**

@@ -7,7 +7,7 @@ import {
   createDocument, 
   updateDocument, 
   deleteDocument 
-} from '../../../firebase/firestore';
+} from '../../../services/api';
 import { Calendar, Plus, Edit2, Trash2, MapPin } from 'lucide-react';
 import Card, { CardBody } from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { getAllDocuments, createDocument } from '../../firebase/firestore';
+import { getAllDocuments, createDocument } from '../../services/api';
 import { Calendar, MapPin, Clock, CalendarCheck, Sparkles, CheckCircle2 } from 'lucide-react';
 import Card, { CardBody } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -179,7 +179,7 @@ const Events = () => {
                         </p>
                       </CardBody>
                       <div className="px-6 py-3 bg-gray-50/50 border-t border-gray-100 text-[11px] text-text-secondary flex items-center justify-between">
-                        <span>📍 {e.location}</span>
+                        <span className="flex items-center gap-1.5"><MapPin className="w-3 h-3 shrink-0" /> {e.location}</span>
                         <span className="font-semibold text-gray-400">Completed</span>
                       </div>
                     </Card>
@@ -212,11 +212,11 @@ const Events = () => {
           </div>
         ) : (
           <form onSubmit={handleSubmit(handleModalSubmit)} className="space-y-4">
-            <div className="p-4 bg-blue-50 border border-blue-100 rounded-md text-xs text-text-secondary space-y-1">
+            <div className="p-4 bg-blue-50 border border-blue-100 rounded-md text-xs text-text-secondary space-y-1.5">
               <p className="font-bold text-secondary">Event Details:</p>
-              <p>📅 Date: {selectedEvent?.date}</p>
-              <p>⏰ Time: {selectedEvent?.time}</p>
-              <p>📍 Venue: {selectedEvent?.location}</p>
+              <p className="flex items-center gap-2"><Calendar className="w-3.5 h-3.5 text-secondary shrink-0" /> Date: {selectedEvent?.date}</p>
+              <p className="flex items-center gap-2"><Clock className="w-3.5 h-3.5 text-secondary shrink-0" /> Time: {selectedEvent?.time}</p>
+              <p className="flex items-center gap-2"><MapPin className="w-3.5 h-3.5 text-secondary shrink-0" /> Venue: {selectedEvent?.location}</p>
             </div>
 
             <Input 
