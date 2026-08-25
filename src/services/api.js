@@ -42,8 +42,17 @@ export const checkAuthApi = async () => {
   return await apiRequest('/auth/me');
 };
 
-export const logoutApi = () => {
-  localStorage.removeItem('lasso_admin_token');
+export const logoutApi = async () => {
+  try {
+    // Best-effort: invalidates the token server-side (bumps token_version)
+    // so it can't be reused even if it leaked. If this fails — token
+    // already expired/revoked, offline, etc — still clear the local copy.
+    await apiRequest('/auth/logout', { method: 'POST' });
+  } catch {
+    // Ignore — the local token is removed either way below.
+  } finally {
+    localStorage.removeItem('lasso_admin_token');
+  }
 };
 
 export const forgotPasswordApi = async () => {

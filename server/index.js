@@ -21,9 +21,19 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const isProd = process.env.NODE_ENV === 'production';
 
-// Behind Nginx/Apache the client IP arrives in X-Forwarded-For. Without this,
-// express-rate-limit would see the proxy's IP and throttle every user as one.
-app.set('trust proxy', 1);
+// Behind the production Nginx config (see DEPLOYMENT.md), X-Forwarded-For is
+// set via `$proxy_add_x_forwarded_for`, which *appends* the real client IP
+// rather than trusting whatever the client sent — so with `trust proxy: 1`,
+// Express correctly reads that right-most, proxy-supplied hop.
+//
+// Only enable this in production. With no reverse proxy in front (local dev,
+// or the port hit directly), trusting X-Forwarded-For lets any client set it
+// to an arbitrary value and rotate it per request to bypass IP-based rate
+// limiting (login brute-force, enquiry flooding) entirely — Express would
+// otherwise fall back to the real, non-spoofable socket address.
+if (isProd) {
+  app.set('trust proxy', 1);
+}
 
 // Security headers. crossOriginResourcePolicy is relaxed because /uploads
 // intentionally serves public images to the frontend, which may be a

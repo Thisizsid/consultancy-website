@@ -232,9 +232,26 @@ export const initDb = () => {
         id TEXT PRIMARY KEY,
         email TEXT UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
+        token_version INTEGER NOT NULL DEFAULT 0,
         created_at TEXT DEFAULT (datetime('now'))
       )
     `);
+
+    // Migration: add token_version to a pre-existing admin_users table that
+    // predates it. Every issued JWT embeds the version it was minted with;
+    // bumping this column invalidates all outstanding tokens for that user
+    // at once (used on password change/reset and explicit logout), which is
+    // otherwise impossible with stateless JWTs.
+    db.all(`PRAGMA table_info(admin_users)`, (err, columns) => {
+      if (err) return console.error('Error reading admin_users schema:', err);
+      const hasTokenVersion = columns.some((c) => c.name === 'token_version');
+      if (!hasTokenVersion) {
+        db.run(`ALTER TABLE admin_users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0`, (alterErr) => {
+          if (alterErr) console.error('Error adding token_version column:', alterErr);
+          else console.log('Migrated admin_users: added token_version column');
+        });
+      }
+    });
 
     // Password reset tokens table
     db.run(`

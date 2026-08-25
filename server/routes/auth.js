@@ -69,7 +69,7 @@ router.post('/login', loginLimiter, async (req, res) => {
           role: 'admin',
         };
 
-        const token = generateToken(user);
+        const token = generateToken({ ...user, tokenVersion: adminUser.token_version || 0 });
         return res.json({ user, token });
       }
     );
@@ -85,6 +85,29 @@ router.post('/login', loginLimiter, async (req, res) => {
  */
 router.get('/me', verifyTokenMiddleware, (req, res) => {
   return res.json({ user: req.user });
+});
+
+/**
+ * POST /api/auth/logout
+ * Previously client-side only (just clearing localStorage), which meant a
+ * stolen or copied token stayed valid until its natural expiry regardless
+ * of "logging out". Bumping token_version here makes logout actually
+ * revoke the token server-side, immediately — for this session and any
+ * other outstanding one for the same account.
+ */
+router.post('/logout', verifyTokenMiddleware, (req, res) => {
+  const db = getDb();
+  db.run(
+    `UPDATE admin_users SET token_version = token_version + 1 WHERE id = ?`,
+    [req.user.uid],
+    (err) => {
+      if (err) {
+        console.error('Logout token invalidation failed:', err);
+        return res.status(500).json({ error: 'Logout failed' });
+      }
+      return res.json({ message: 'Logged out' });
+    }
+  );
 });
 
 /**
@@ -204,9 +227,11 @@ router.post('/reset-password', resetPasswordLimiter, async (req, res) => {
       // Hash the new password
       const hash = await bcrypt.hash(newPassword, 12);
 
-      // Update password
+      // Update password. token_version increments so any token issued
+      // before this reset — including one an attacker may have stolen — is
+      // rejected by verifyTokenMiddleware from this point on.
       db.run(
-        `UPDATE admin_users SET password_hash = ? WHERE LOWER(email) = LOWER(?)`,
+        `UPDATE admin_users SET password_hash = ?, token_version = token_version + 1 WHERE LOWER(email) = LOWER(?)`,
         [hash, resetToken.email],
         function (updateErr) {
           if (updateErr) {
@@ -255,8 +280,11 @@ router.put('/change-password', verifyTokenMiddleware, async (req, res) => {
       }
 
       const hash = await bcrypt.hash(newPassword, 12);
+      // token_version increments so the token used to make *this* request
+      // is itself invalidated — changing your password logs every session
+      // out, this one included, rather than leaving old tokens usable.
       db.run(
-        `UPDATE admin_users SET password_hash = ? WHERE id = ?`,
+        `UPDATE admin_users SET password_hash = ?, token_version = token_version + 1 WHERE id = ?`,
         [hash, adminUser.id],
         (updateErr) => {
           if (updateErr) {

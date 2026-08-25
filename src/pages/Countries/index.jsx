@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { getAllDocuments } from '../../services/api';
 import Card, { CardBody } from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
-import CountryFlag from '../../components/ui/CountryFlag';
 import { ArrowRight, Globe } from 'lucide-react';
 import Button from '../../components/ui/Button';
 
@@ -62,9 +61,6 @@ const Countries = () => {
                     alt={c.name}
                     className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                   />
-                  <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-2.5 py-1.5 rounded-full shadow-sm border border-gray-100">
-                    <CountryFlag code={c.flagCode} title={c.name} className="w-6 rounded-sm" />
-                  </div>
                 </div>
 
                 {/* Body Content */}

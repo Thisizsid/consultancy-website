@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,6 +9,7 @@ import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import { changeAdminPassword, getFriendlyAuthError } from '../../services/auth';
 import { useUiStore } from '../../store/uiStore';
+import { useAuthStore } from '../../store/authStore';
 
 // Mirrors the server-side rule in routes/auth.js (min 6 chars)
 const schema = z
@@ -30,6 +32,8 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
   const [success, setSuccess] = useState(false);
   const [serverError, setServerError] = useState('');
   const { showToast } = useUiStore();
+  const { logout } = useAuthStore();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -42,6 +46,16 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
   });
 
   const close = () => {
+    // Changing the password invalidates the current session's token
+    // server-side (see server/routes/auth.js), so leaving the modal after a
+    // successful change must sign out and send the admin back to login
+    // rather than let them keep clicking around with a token that's already
+    // dead — the next authenticated request would just 401 unpredictably.
+    if (success) {
+      logout();
+      navigate('/admin/login');
+      return;
+    }
     reset();
     setServerError('');
     setSuccess(false);
@@ -70,10 +84,11 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
           <CheckCircle2 className="w-14 h-14 text-green-500 mx-auto" />
           <h4 className="text-lg font-bold text-primary">Password Updated</h4>
           <p className="text-sm text-text-secondary leading-relaxed">
-            Your new password is active. Use it the next time you sign in.
+            Your new password is active. For security, you've been signed out
+            everywhere — sign back in with it below.
           </p>
           <Button variant="outline" className="w-full" onClick={close}>
-            Done
+            Sign In Again
           </Button>
         </div>
       ) : (

@@ -23,7 +23,6 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Card, { CardBody } from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
-import CountryFlag from '../../components/ui/CountryFlag';
 import { useUiStore } from '../../store/uiStore';
 
 // Zod validation schema for enquiry form
@@ -130,10 +129,7 @@ const CountryDetail = () => {
           <Link to="/countries" className="inline-flex items-center gap-2 text-sm text-gray-300 hover:text-white mb-6 font-semibold">
             <ArrowLeft className="w-4 h-4" /> Back to Countries
           </Link>
-          <div className="flex items-center gap-4">
-            <CountryFlag code={country.flagCode} title={country.name} className="w-12 md:w-14 rounded shadow-sm" />
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">{country.name} Requirements</h1>
-          </div>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">{country.name} Requirements</h1>
           <p className="text-gray-300 text-lg mt-4 max-w-3xl leading-relaxed">
             {country.description}
           </p>

@@ -12,7 +12,7 @@ export const signInAdmin = async (email, password) => {
  * Sign out admin user
  */
 export const signOutAdmin = async () => {
-  logoutApi();
+  await logoutApi();
 };
 
 /**
