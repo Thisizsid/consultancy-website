@@ -1,6 +1,6 @@
 /* Global Theme & Utility Classes */
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Manrope', sans-serif;
   color: var(--text-primary);
   background-color: var(--bg);
   -webkit-font-smoothing: antialiased;

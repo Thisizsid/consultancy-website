@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   GitBranch,
   MapPin,
@@ -13,6 +14,7 @@ import Badge from '../../components/ui/Badge';
 const Branches = () => {
   const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
 
   useEffect(() => {
     const fetchBranches = async () => {
@@ -27,6 +29,16 @@ const Branches = () => {
     };
     fetchBranches();
   }, []);
+
+  // Scroll to a specific branch card when arriving via a dropdown link (#branchId)
+  useEffect(() => {
+    if (!loading && location.hash) {
+      const el = document.getElementById(location.hash.slice(1));
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [loading, location.hash]);
 
   return (
     <div className="overflow-hidden">
@@ -70,7 +82,8 @@ const Branches = () => {
               {branches.map((branch) => (
                 <div
                   key={branch.id}
-                  className="group bg-white border border-gray-150 rounded-xl p-6 flex flex-col gap-5 shadow-sm hover:shadow-lg hover:border-secondary/30 transition-all duration-300"
+                  id={branch.id}
+                  className="group bg-white border border-gray-150 rounded-xl p-6 flex flex-col gap-5 shadow-sm hover:shadow-lg hover:border-secondary/30 transition-all duration-300 scroll-mt-28"
                 >
                   {/* Header */}
                   <div className="flex items-start gap-3">

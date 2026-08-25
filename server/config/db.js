@@ -18,8 +18,27 @@ const COLLECTIONS = [
   'branches',
   'enquiries',
   'gallery',
+  'settings',
   'users'
 ];
+
+const SETTINGS_DOC_ID = 'site_settings';
+
+const defaultSiteSettings = {
+  aboutUs: {
+    tagline: 'Connecting Students to Global Opportunities',
+    description: 'Lasso Consultancy is a premier study abroad counseling platform helping students gain admission and visa approvals for top global education hubs.',
+  },
+  contactInfo: {
+    address: '102 Premium Plaza, Parliament Road, Kathmandu, Nepal',
+    phone: '+977 1-4433221',
+    email: 'info@lassoconsultancy.com',
+  },
+  officeHours: [
+    { days: 'Sunday - Friday', hours: '9:00 AM - 6:00 PM', closed: false },
+    { days: 'Saturday', hours: 'Closed', closed: true },
+  ],
+};
 
 // Seed Data
 const defaultCountries = [
@@ -247,6 +266,24 @@ export const initDb = () => {
     seedTable('testimonials', defaultTestimonials);
     seedTable('events', defaultEvents);
     seedTable('partners', defaultPartners);
+
+    // Settings is a single fixed-id document rather than a list — seed it directly,
+    // and backfill any default keys (e.g. added in a later release) it doesn't have yet.
+    db.get(`SELECT id, data FROM settings WHERE id = ?`, [SETTINGS_DOC_ID], (err, row) => {
+      if (err) return console.error('Error checking settings:', err);
+      if (!row) {
+        console.log(`Seeding SQLite table 'settings'...`);
+        const dataStr = JSON.stringify({ id: SETTINGS_DOC_ID, ...defaultSiteSettings });
+        db.run(`INSERT INTO settings (id, data) VALUES (?, ?)`, [SETTINGS_DOC_ID, dataStr]);
+      } else {
+        let existing = {};
+        try { existing = JSON.parse(row.data); } catch { /* ignore malformed row */ }
+        const merged = { ...defaultSiteSettings, ...existing, id: SETTINGS_DOC_ID };
+        if (JSON.stringify(merged) !== row.data) {
+          db.run(`UPDATE settings SET data = ? WHERE id = ?`, [JSON.stringify(merged), SETTINGS_DOC_ID]);
+        }
+      }
+    });
 
     // Seed admin user from env vars (only if no admin exists yet)
     const adminEmail = process.env.ADMIN_EMAIL;

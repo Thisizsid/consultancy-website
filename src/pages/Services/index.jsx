@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { getAllDocuments } from '../../services/api';
 import { 
   Compass, 
@@ -27,6 +28,7 @@ const iconMap = {
 const Services = () => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -41,6 +43,16 @@ const Services = () => {
     };
     fetchServices();
   }, []);
+
+  // Scroll to a specific service card when arriving via a dropdown link (#serviceId)
+  useEffect(() => {
+    if (!loading && location.hash) {
+      const el = document.getElementById(location.hash.slice(1));
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [loading, location.hash]);
 
   return (
     <div className="bg-surface min-h-screen pt-28 pb-20">
@@ -72,7 +84,11 @@ const Services = () => {
             {services.map((s, idx) => {
               const ServiceIcon = iconMap[s.icon] || Compass;
               return (
-                <Card key={idx} className="bg-white p-6 md:p-8 flex flex-col justify-between h-full border border-gray-150 hover:border-gray-200 transition-all">
+                <Card
+                  key={idx}
+                  id={s.id || idx}
+                  className="bg-white p-6 md:p-8 flex flex-col justify-between h-full border border-gray-150 hover:border-gray-200 transition-all scroll-mt-28"
+                >
                   <div className="space-y-4">
                     <div className="w-12 h-12 rounded-md bg-blue-50 text-secondary flex items-center justify-center">
                       <ServiceIcon className="w-6 h-6" />

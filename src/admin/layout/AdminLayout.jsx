@@ -14,7 +14,8 @@ import {
   Inbox,
   GitBranch,
   ImageIcon,
-  KeyRound
+  KeyRound,
+  Settings
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useUiStore } from '../../store/uiStore';
@@ -55,6 +56,7 @@ const AdminLayout = () => {
     { name: 'Partners CMS', path: '/admin/partners', icon: Building },
     { name: 'Branches', path: '/admin/branches', icon: GitBranch },
     { name: 'Gallery CMS', path: '/admin/gallery', icon: ImageIcon },
+    { name: 'Site Settings', path: '/admin/settings', icon: Settings },
   ];
 
   return (

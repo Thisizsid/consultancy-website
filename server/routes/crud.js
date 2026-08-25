@@ -13,7 +13,8 @@ const VALID_COLLECTIONS = [
   'partners',
   'branches',
   'enquiries',
-  'gallery'
+  'gallery',
+  'settings'
 ];
 
 const validateCollection = (req, res, next) => {

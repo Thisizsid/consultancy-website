@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Menu, X, LayoutDashboard } from 'lucide-react';
+import { Menu, X, LayoutDashboard, ChevronDown } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
+import { getAllDocuments } from '../../services/api';
 import Button from '../ui/Button';
+import NavDropdown from './NavDropdown';
 import logo from '../../assets/logo.png';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [openMenu, setOpenMenu] = useState(null);
+  const [mobileExpanded, setMobileExpanded] = useState(null);
+  const [dropdownData, setDropdownData] = useState({ countries: [], services: [], branches: [] });
+  const [dropdownLoading, setDropdownLoading] = useState(true);
   const location = useLocation();
   const { isAuthenticated } = useAuthStore();
 
@@ -26,15 +32,69 @@ const Navbar = () => {
   // Close mobile menu on route change
   useEffect(() => {
     setIsOpen(false);
+    setMobileExpanded(null);
   }, [location]);
+
+  // Load dropdown data once (used across every page the navbar renders on)
+  useEffect(() => {
+    const fetchDropdownData = async () => {
+      try {
+        const [countries, services, branches] = await Promise.all([
+          getAllDocuments('countries').catch(() => []),
+          getAllDocuments('services').catch(() => []),
+          getAllDocuments('branches').catch(() => []),
+        ]);
+        setDropdownData({
+          countries: countries.filter((c) => c.visible !== false),
+          services,
+          branches: branches.filter((b) => b.status === 'active'),
+        });
+      } catch (error) {
+        console.error('Error fetching nav dropdown data:', error);
+      } finally {
+        setDropdownLoading(false);
+      }
+    };
+    fetchDropdownData();
+  }, []);
+
+  const dropdownConfig = {
+    countries: {
+      label: 'Countries',
+      basePath: '/countries',
+      items: dropdownData.countries.map((c) => ({
+        key: c.id,
+        label: c.name,
+        path: `/countries/${c.slug}`,
+      })),
+    },
+    services: {
+      label: 'Services',
+      basePath: '/services',
+      items: dropdownData.services.map((s, idx) => ({
+        key: s.id || idx,
+        label: s.title,
+        path: `/services#${s.id || idx}`,
+      })),
+    },
+    branches: {
+      label: 'Branches',
+      basePath: '/branches',
+      items: dropdownData.branches.map((b, idx) => ({
+        key: b.id || idx,
+        label: `${b.name}${b.city ? ` — ${b.city}` : ''}`,
+        path: `/branches#${b.id || idx}`,
+      })),
+    },
+  };
 
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'Countries', path: '/countries' },
-    { name: 'Services', path: '/services' },
+    { name: 'Countries', path: '/countries', dropdown: 'countries' },
+    { name: 'Services', path: '/services', dropdown: 'services' },
     { name: 'Events', path: '/events' },
     { name: 'Gallery', path: '/gallery' },
-    { name: 'Branches', path: '/branches' },
+    { name: 'Branches', path: '/branches', dropdown: 'branches' },
   ];
 
   const isHomePage = location.pathname === '/';
@@ -67,23 +127,41 @@ const Navbar = () => {
 
           {/* Desktop Nav Items */}
           <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <NavLink
-                key={link.name}
-                to={link.path}
-                className={({ isActive }) => `
-                  text-sm font-semibold tracking-wide transition-colors duration-300 hover:text-secondary
-                  ${isActive
-                    ? 'text-secondary font-bold border-b-2 border-secondary pb-1'
-                    : showDarkBackground
-                      ? 'text-text-primary'
-                      : 'text-white/90 hover:text-white'
-                  }
-                `}
-              >
-                {link.name}
-              </NavLink>
-            ))}
+            {navLinks.map((link) => {
+              if (link.dropdown) {
+                const config = dropdownConfig[link.dropdown];
+                return (
+                  <NavDropdown
+                    key={link.name}
+                    label={config.label}
+                    isOpen={openMenu === link.dropdown}
+                    onOpen={() => setOpenMenu(link.dropdown)}
+                    onClose={() => setOpenMenu((prev) => (prev === link.dropdown ? null : prev))}
+                    items={config.items}
+                    loading={dropdownLoading}
+                    showDarkBackground={showDarkBackground}
+                    isActiveGroup={location.pathname.startsWith(config.basePath)}
+                  />
+                );
+              }
+              return (
+                <NavLink
+                  key={link.name}
+                  to={link.path}
+                  className={({ isActive }) => `
+                    text-sm font-semibold tracking-wide transition-colors duration-300 hover:text-secondary
+                    ${isActive
+                      ? 'text-secondary font-bold border-b-2 border-secondary pb-1'
+                      : showDarkBackground
+                        ? 'text-text-primary'
+                        : 'text-white/90 hover:text-white'
+                    }
+                  `}
+                >
+                  {link.name}
+                </NavLink>
+              );
+            })}
           </div>
 
           {/* Desktop CTA / Admin Buttons */}
@@ -125,19 +203,61 @@ const Navbar = () => {
 
       {/* Mobile Drawer Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white border-b border-gray-200 px-4 pt-2 pb-6 space-y-3 shadow-md animate-in slide-in-from-top-5 duration-200">
-          {navLinks.map((link) => (
-            <NavLink
-              key={link.name}
-              to={link.path}
-              className={({ isActive }) => `
-                block px-3 py-2 rounded-md text-base font-semibold transition-colors
-                ${isActive ? 'bg-secondary/10 text-secondary' : 'text-text-primary hover:bg-gray-50'}
-              `}
-            >
-              {link.name}
-            </NavLink>
-          ))}
+        <div className="md:hidden bg-white border-b border-gray-200 px-4 pt-2 pb-6 space-y-1 shadow-md animate-in slide-in-from-top-5 duration-200">
+          {navLinks.map((link) => {
+            if (link.dropdown) {
+              const config = dropdownConfig[link.dropdown];
+              const expanded = mobileExpanded === link.dropdown;
+              return (
+                <div key={link.name} className="border-b border-gray-100 last:border-b-0">
+                  <button
+                    type="button"
+                    onClick={() => setMobileExpanded(expanded ? null : link.dropdown)}
+                    className={`w-full flex items-center justify-between px-3 py-3 rounded-md text-base font-semibold transition-colors ${location.pathname.startsWith(config.basePath) ? 'text-secondary' : 'text-text-primary hover:bg-gray-50'
+                      }`}
+                    aria-expanded={expanded}
+                  >
+                    <span>{link.name}</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`} />
+                  </button>
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ease-out ${expanded ? 'max-h-72 opacity-100' : 'max-h-0 opacity-0'
+                      }`}
+                  >
+                    <div className="overflow-y-auto max-h-72 pl-3 pb-2 space-y-0.5">
+                      <NavLink
+                        to={link.path}
+                        className="block px-3 py-2 rounded-md text-sm font-semibold text-secondary hover:bg-blue-50"
+                      >
+                        View all {link.name.toLowerCase()}
+                      </NavLink>
+                      {config.items.map((item) => (
+                        <Link
+                          key={item.key}
+                          to={item.path}
+                          className="block px-3 py-2 rounded-md text-sm text-text-secondary hover:bg-gray-50 hover:text-secondary truncate"
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+            return (
+              <NavLink
+                key={link.name}
+                to={link.path}
+                className={({ isActive }) => `
+                  block px-3 py-3 rounded-md text-base font-semibold transition-colors
+                  ${isActive ? 'bg-secondary/10 text-secondary' : 'text-text-primary hover:bg-gray-50'}
+                `}
+              >
+                {link.name}
+              </NavLink>
+            );
+          })}
           <div className="pt-4 flex flex-col gap-3 px-3">
             {isAuthenticated && (
               <Link to="/admin/dashboard" className="w-full">

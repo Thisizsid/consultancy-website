@@ -25,6 +25,7 @@ import PartnersCMS from './admin/pages/PartnersCMS';
 import EnquiriesCMS from './admin/pages/EnquiriesCMS';
 import BranchesCMS from './admin/pages/BranchesCMS';
 import GalleryCMS from './admin/pages/GalleryCMS';
+import SettingsCMS from './admin/pages/SettingsCMS';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ResetPassword from './admin/pages/ResetPassword';
 
@@ -76,6 +77,7 @@ function App() {
           <Route path="enquiries" element={<EnquiriesCMS />} />
           <Route path="branches" element={<BranchesCMS />} />
           <Route path="gallery" element={<GalleryCMS />} />
+          <Route path="settings" element={<SettingsCMS />} />
         </Route>
 
         {/* Wildcard Fallback */}
