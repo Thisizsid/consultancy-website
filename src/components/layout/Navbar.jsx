@@ -72,7 +72,6 @@ const Navbar = () => {
     countries: {
       label: 'Countries',
       basePath: '/countries',
-      eyebrow: 'Study Destinations',
       columns: dropdownData.countries.length > 4 ? 2 : 1,
       items: dropdownData.countries.map((c) => ({
         key: c.id,
@@ -85,7 +84,6 @@ const Navbar = () => {
     services: {
       label: 'Services',
       basePath: '/services',
-      eyebrow: 'How We Help',
       columns: 1,
       items: dropdownData.services.map((s, idx) => ({
         key: s.id || idx,
@@ -98,7 +96,6 @@ const Navbar = () => {
     branches: {
       label: 'Branches',
       basePath: '/branches',
-      eyebrow: 'Visit Us',
       columns: 1,
       items: dropdownData.branches.map((b, idx) => ({
         key: b.id || idx,
@@ -156,9 +153,7 @@ const Navbar = () => {
                   <NavDropdown
                     key={link.name}
                     label={config.label}
-                    eyebrow={config.eyebrow}
                     columns={config.columns}
-                    basePath={config.basePath}
                     isOpen={openMenu === link.dropdown}
                     onOpen={() => setOpenMenu(link.dropdown)}
                     onClose={() => setOpenMenu((prev) => (prev === link.dropdown ? null : prev))}
@@ -262,7 +257,7 @@ const Navbar = () => {
                           to={item.path}
                           className="flex items-center gap-2.5 px-3 py-2 rounded-md hover:bg-gray-50 group"
                         >
-                          <div className="w-6 h-6 rounded bg-blue-50 text-secondary flex items-center justify-center shrink-0">
+                          <div className="w-6 h-6 rounded bg-surface text-text-primary flex items-center justify-center shrink-0">
                             {item.icon ? (
                               <item.icon className="w-3.5 h-3.5" />
                             ) : (
