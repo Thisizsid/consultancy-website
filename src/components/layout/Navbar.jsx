@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import {
-  Menu, X, LayoutDashboard, ChevronDown, MapPin,
+  Menu, X, LayoutDashboard, ChevronDown, MapPin, Globe2,
   Compass, School, FileText, CheckSquare, Edit3, Award,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
@@ -77,7 +77,7 @@ const Navbar = () => {
         key: c.id,
         label: c.name,
         sub: c.tuitionFees ? `From ${c.tuitionFees.split('/')[0].trim()}/yr` : undefined,
-        badge: c.name.slice(0, 2).toUpperCase(),
+        icon: Globe2,
         path: `/countries/${c.slug}`,
       })),
     },
