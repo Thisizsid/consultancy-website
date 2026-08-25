@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Menu, X, LayoutDashboard, ChevronDown } from 'lucide-react';
+import {
+  Menu, X, LayoutDashboard, ChevronDown, MapPin,
+  Compass, School, FileText, CheckSquare, Edit3, Award,
+} from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { getAllDocuments } from '../../services/api';
 import Button from '../ui/Button';
 import NavDropdown from './NavDropdown';
 import logo from '../../assets/logo.png';
+
+// Mirrors the icon field stored on each service document (see ServicesCMS),
+// so the dropdown can show the same icon used on the Services page instead
+// of a generic placeholder.
+const SERVICE_ICON_MAP = { Compass, School, FileText, CheckSquare, Edit3, Award };
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,10 +37,12 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on route change
+  // Close mobile menu and any open dropdown on route change — a dropdown
+  // opened by tap (touch devices) has no mouseleave to close it otherwise.
   useEffect(() => {
     setIsOpen(false);
     setMobileExpanded(null);
+    setOpenMenu(null);
   }, [location]);
 
   // Load dropdown data once (used across every page the navbar renders on)
@@ -62,27 +72,39 @@ const Navbar = () => {
     countries: {
       label: 'Countries',
       basePath: '/countries',
+      eyebrow: 'Study Destinations',
+      columns: dropdownData.countries.length > 4 ? 2 : 1,
       items: dropdownData.countries.map((c) => ({
         key: c.id,
         label: c.name,
+        sub: c.tuitionFees ? `From ${c.tuitionFees.split('/')[0].trim()}/yr` : undefined,
+        badge: c.name.slice(0, 2).toUpperCase(),
         path: `/countries/${c.slug}`,
       })),
     },
     services: {
       label: 'Services',
       basePath: '/services',
+      eyebrow: 'How We Help',
+      columns: 1,
       items: dropdownData.services.map((s, idx) => ({
         key: s.id || idx,
         label: s.title,
+        sub: s.description ? `${s.description.slice(0, 48).trim()}${s.description.length > 48 ? '…' : ''}` : undefined,
+        icon: SERVICE_ICON_MAP[s.icon] || Compass,
         path: `/services#${s.id || idx}`,
       })),
     },
     branches: {
       label: 'Branches',
       basePath: '/branches',
+      eyebrow: 'Visit Us',
+      columns: 1,
       items: dropdownData.branches.map((b, idx) => ({
         key: b.id || idx,
-        label: `${b.name}${b.city ? ` — ${b.city}` : ''}`,
+        label: b.name,
+        sub: b.city,
+        icon: MapPin,
         path: `/branches#${b.id || idx}`,
       })),
     },
@@ -134,6 +156,9 @@ const Navbar = () => {
                   <NavDropdown
                     key={link.name}
                     label={config.label}
+                    eyebrow={config.eyebrow}
+                    columns={config.columns}
+                    basePath={config.basePath}
                     isOpen={openMenu === link.dropdown}
                     onOpen={() => setOpenMenu(link.dropdown)}
                     onClose={() => setOpenMenu((prev) => (prev === link.dropdown ? null : prev))}
@@ -235,9 +260,18 @@ const Navbar = () => {
                         <Link
                           key={item.key}
                           to={item.path}
-                          className="block px-3 py-2 rounded-md text-sm text-text-secondary hover:bg-gray-50 hover:text-secondary truncate"
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-md hover:bg-gray-50 group"
                         >
-                          {item.label}
+                          <div className="w-6 h-6 rounded bg-blue-50 text-secondary flex items-center justify-center shrink-0">
+                            {item.icon ? (
+                              <item.icon className="w-3.5 h-3.5" />
+                            ) : (
+                              <span className="text-[9px] font-extrabold">{item.badge}</span>
+                            )}
+                          </div>
+                          <span className="text-sm text-text-secondary group-hover:text-secondary truncate">
+                            {item.label}
+                          </span>
                         </Link>
                       ))}
                     </div>
