@@ -1,0 +1,19 @@
+# Single-service deployment: one Railway service builds the frontend and
+# runs the Express backend, which serves both (see server/index.js). With no
+# config here, Railway's Nixpacks auto-detection treats this repo as a
+# static Vite site and never starts the backend at all — every POST/PUT
+# request (login, password reset, CMS writes, ...) 404s or 405s even though
+# the site loads fine, since GETs are served by the static host.
+#
+# Two package.json trees need installing: the root one (frontend) and
+# server/ (backend, its own dependencies). The frontend must be built
+# (`vite build` -> dist/) before the backend starts, since server/index.js
+# serves dist/ as static files with an SPA fallback.
+
+[build]
+buildCommand = "npm ci && npm run build && npm --prefix server ci"
+
+[deploy]
+startCommand = "npm run server"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

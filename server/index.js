@@ -6,6 +6,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 import { initDb } from './config/db.js';
@@ -105,6 +106,22 @@ app.get('/api/health', (req, res) => {
 app.use('/api', (req, res) => {
   res.status(404).json({ error: `Not found: ${req.method} ${req.originalUrl}` });
 });
+
+// Single-service deployment: this process also serves the built frontend
+// (dist/), so one Railway/VPS service covers both the API and the site —
+// no separate static host, no path-based routing to configure. Skipped
+// harmlessly if dist/ doesn't exist (e.g. running `npm run server` locally
+// without building first — the Vite dev server serves the frontend then).
+const distPath = path.resolve(__dirname, '../dist');
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath, { maxAge: isProd ? '1d' : 0 }));
+  // SPA fallback: any GET that isn't a real static file or an API/uploads
+  // route is a client-side route (e.g. /countries/canada) — let React
+  // Router handle it by serving index.html.
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
 
 // Central error handler — keeps internals out of client responses in production
 app.use((err, req, res, next) => {
