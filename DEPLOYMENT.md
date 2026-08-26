@@ -73,17 +73,17 @@ sudo systemctl status lasso-api
 
 ### Reverse proxy (Nginx)
 
-The app calls the API at `https://lassoconsultancy.com.np/api`, so `/api` and
+The app calls the API at `https://lassoconsultancy.com/api`, so `/api` and
 `/uploads` must proxy to port 5000 on the same domain.
 
 ```nginx
 server {
     listen 443 ssl http2;
-    server_name lassoconsultancy.com.np www.lassoconsultancy.com.np;
+    server_name lassoconsultancy.com www.lassoconsultancy.com;
 
     # TLS via certbot
-    ssl_certificate     /etc/letsencrypt/live/lassoconsultancy.com.np/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/lassoconsultancy.com.np/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/lassoconsultancy.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/lassoconsultancy.com/privkey.pem;
 
     client_max_body_size 12M;          # uploads are capped at 10MB server-side
 
@@ -109,7 +109,7 @@ server {
 
 server {
     listen 80;
-    server_name lassoconsultancy.com.np www.lassoconsultancy.com.np;
+    server_name lassoconsultancy.com www.lassoconsultancy.com;
     return 301 https://$host$request_uri;
 }
 ```
@@ -127,11 +127,16 @@ npm run build      # reads .env.production -> VITE_API_URL
 Deploy `dist/`. `.env.production` already sets:
 
 ```
-VITE_API_URL=https://lassoconsultancy.com.np/api
+VITE_API_URL=https://lassoconsultancy.com/api
 ```
 
-On Vercel, `vercel.json` handles SPA routing. If the backend is on a different
-host, add that origin to `allowedOrigins` in `server/index.js`.
+On Vercel, `vercel.json` handles SPA routing.
+
+CORS is driven by `FRONTEND_URL` (already required above), not a hardcoded
+domain — so pointing the site at a new domain later is a config change, not
+a code change. Need to allow more than one origin (e.g. apex + `www`, or a
+staging domain)? Set `ALLOWED_ORIGINS` to a comma-separated list of the
+extra ones.
 
 ## 3. First login
 

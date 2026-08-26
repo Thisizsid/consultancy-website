@@ -17,7 +17,21 @@ const apiRequest = async (url, options = {}) => {
   };
 
   const response = await fetch(`${API_BASE}${url}`, config);
-  const data = await response.json();
+
+  // A response with no/non-JSON body (e.g. an empty body from a proxy that
+  // timed out and cut the connection before the server replied, or an HTML
+  // error page from an intermediary) would otherwise surface as a cryptic
+  // "Unexpected end of JSON input" with no indication of what actually
+  // failed. Surface something the user — and whoever's debugging — can act on.
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error(
+      `Server returned an invalid response (HTTP ${response.status}). ` +
+      'It may have timed out or is temporarily unavailable — please try again.'
+    );
+  }
 
   if (!response.ok) {
     throw new Error(data.error || 'API Request failed');

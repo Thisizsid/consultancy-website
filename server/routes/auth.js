@@ -9,8 +9,23 @@ import { loginLimiter, forgotPasswordLimiter, resetPasswordLimiter } from '../mi
 const router = express.Router();
 
 // --- Email Transporter (configured via .env) ---
+// Without an explicit timeout, a blocked/slow SMTP connection (common on
+// PaaS platforms that restrict outbound mail ports) can hang far longer
+// than the platform's own request timeout. The proxy then kills the
+// connection first, the client gets an empty body instead of our JSON
+// error, and `response.json()` fails with a confusing parse error that
+// has nothing to do with the actual (SMTP) problem. Fail fast instead, so
+// the forgot-password route's catch block always gets a chance to send a
+// real error response.
+const MAIL_TIMEOUT_MS = 10000;
+
 const getTransporter = () => {
   const pass = (process.env.SMTP_PASS || '').replace(/\s+/g, '');
+  const timeouts = {
+    connectionTimeout: MAIL_TIMEOUT_MS,
+    greetingTimeout: MAIL_TIMEOUT_MS,
+    socketTimeout: MAIL_TIMEOUT_MS,
+  };
   if (process.env.SMTP_HOST === 'smtp.gmail.com' || !process.env.SMTP_HOST) {
     return nodemailer.createTransport({
       service: 'gmail',
@@ -18,6 +33,7 @@ const getTransporter = () => {
         user: process.env.SMTP_USER,
         pass: pass,
       },
+      ...timeouts,
     });
   }
   return nodemailer.createTransport({
@@ -28,6 +44,7 @@ const getTransporter = () => {
       user: process.env.SMTP_USER,
       pass: pass,
     },
+    ...timeouts,
   });
 };
 

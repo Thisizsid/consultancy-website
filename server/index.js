@@ -44,9 +44,18 @@ app.use(helmet({
 
 app.use(compression());
 
+// Derived from FRONTEND_URL (already required in production — see
+// config/env.js) instead of a hardcoded domain, so pointing the site at a
+// new domain is a config change, not a code change. ALLOWED_ORIGINS adds
+// any extra origins (e.g. both the apex and www) as a comma-separated list.
+const extraOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 const allowedOrigins = [
-  'https://www.lassoconsultancy.com.np',
-  'https://lassoconsultancy.com.np',
+  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+  ...extraOrigins,
   // Vite dev server — development only, never trusted in production
   ...(isProd ? [] : ['http://localhost:5173', 'http://localhost:4173']),
 ];
