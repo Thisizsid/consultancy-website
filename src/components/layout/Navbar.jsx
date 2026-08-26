@@ -9,6 +9,7 @@ import { getAllDocuments } from '../../services/api';
 import Button from '../ui/Button';
 import NavDropdown from './NavDropdown';
 import logo from '../../assets/logo.png';
+import { documentSlug } from '../../utils/slug';
 
 // Mirrors the icon field stored on each service document (see ServicesCMS),
 // so the dropdown can show the same icon used on the Services page instead
@@ -90,7 +91,7 @@ const Navbar = () => {
         label: s.title,
         sub: s.description ? `${s.description.slice(0, 48).trim()}${s.description.length > 48 ? '…' : ''}` : undefined,
         icon: SERVICE_ICON_MAP[s.icon] || Compass,
-        path: `/services#${s.id || idx}`,
+        path: `/services/${documentSlug(s)}`,
       })),
     },
     branches: {

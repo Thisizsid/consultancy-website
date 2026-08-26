@@ -125,9 +125,13 @@ export const getDocument = async (collectionName, id) => {
   return await apiRequest(`/collections/${collectionName}/${id}`);
 };
 
-export const getCountryBySlug = async (slug) => {
-  return await apiRequest(`/collections/countries/slug/${slug}`);
+export const getDocumentBySlug = async (collectionName, slug) => {
+  return await apiRequest(`/collections/${collectionName}/slug/${encodeURIComponent(slug)}`);
 };
+
+export const getCountryBySlug = async (slug) => getDocumentBySlug('countries', slug);
+
+export const getServiceBySlug = async (slug) => getDocumentBySlug('services', slug);
 
 export const createDocument = async (collectionName, data) => {
   return await apiRequest(`/collections/${collectionName}`, {

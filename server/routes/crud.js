@@ -93,13 +93,30 @@ router.get('/:collection', validateCollection, conditionalReadAuth, (req, res) =
 });
 
 /**
- * GET /api/collections/countries/slug/:slug
+ * Mirror of the client-side slugify in src/utils/slug.js. Used only as a
+ * fallback below, for documents stored before their collection gained a
+ * `slug` field — their URLs are derived from the title/name instead, so
+ * existing rows keep resolving without a data migration.
  */
-router.get('/countries/slug/:slug', (req, res) => {
-  const slug = req.params.slug;
+const slugify = (value = '') =>
+  String(value)
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+/**
+ * GET /api/collections/:collection/slug/:slug
+ *
+ * Declared before the `/:collection/:id` route below so a 3-segment request
+ * like /collections/services/slug/visa-guidance is matched here rather than
+ * being read as the id "slug".
+ */
+router.get('/:collection/slug/:slug', validateCollection, conditionalReadAuth, (req, res) => {
+  const { collection: col, slug } = req.params;
   const db = getDb();
 
-  db.all(`SELECT id, data FROM countries`, [], (err, rows) => {
+  db.all(`SELECT id, data FROM ${col}`, [], (err, rows) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -107,13 +124,14 @@ router.get('/countries/slug/:slug', (req, res) => {
     for (const row of rows) {
       try {
         const parsed = JSON.parse(row.data);
-        if (parsed.slug === slug) {
+        const rowSlug = parsed.slug || slugify(parsed.title || parsed.name);
+        if (rowSlug === slug) {
           return res.json({ id: row.id, ...parsed });
         }
       } catch { /* ignore malformed row */ }
     }
 
-    return res.status(404).json({ error: `Country with slug '${slug}' not found` });
+    return res.status(404).json({ error: `No document with slug '${slug}' in ${col}` });
   });
 });
 

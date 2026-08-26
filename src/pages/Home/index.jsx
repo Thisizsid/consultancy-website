@@ -555,66 +555,44 @@ const Home = () => {
           <p className="text-center text-xs font-bold text-text-secondary uppercase tracking-wider mb-8">
             Partnered with Leading World Universities & Educational Bodies
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-10 md:gap-16 opacity-60">
-            {partners.map((partner, idx) => (
-              <div key={idx} className="flex items-center gap-2 filter grayscale hover:grayscale-0 transition-all cursor-default">
-                <img 
-                  src={partner.logo} 
-                  alt={partner.name} 
-                  className="h-10 w-10 rounded-full object-cover border border-gray-200"
-                />
-                <span className="text-sm font-extrabold text-primary tracking-tight">{partner.name}</span>
-              </div>
-            ))}
+          <div className="flex flex-wrap items-center justify-center gap-10 md:gap-16">
+            {partners.map((partner, idx) => {
+              const logo = (
+                <>
+                  <img
+                    src={partner.logo}
+                    alt={partner.name}
+                    className="h-10 w-10 rounded-full object-cover border border-gray-200"
+                  />
+                  <span className="text-sm font-extrabold text-primary tracking-tight">{partner.name}</span>
+                </>
+              );
+
+              const shared = 'flex items-center gap-2 filter grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all';
+
+              // Partners without a website link stay non-interactive
+              return partner.website ? (
+                <a
+                  key={idx}
+                  href={partner.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={`Visit ${partner.name}`}
+                  className={`${shared} rounded-md focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2`}
+                >
+                  {logo}
+                </a>
+              ) : (
+                <div key={idx} className={`${shared} cursor-default`}>
+                  {logo}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
 
-
-      {events.length > 0 && (
-        <section className="py-20 md:py-24">
-          <div className="max-w-container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
-              <div className="space-y-3 max-w-xl">
-                <Badge variant="warning">SEMINARS & WORKSHOPS</Badge>
-                <h2 className="text-3xl md:text-4xl font-extrabold text-primary">Upcoming Events</h2>
-                <p className="text-text-secondary leading-relaxed">
-                  Join our informative educational seminars, scholarship workshops, and simulated pre-departure interview sessions.
-                </p>
-              </div>
-              <Link to="/events">
-                <Button variant="outline" size="md">
-                  View All Events
-                </Button>
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {events.map((e, idx) => (
-                <Card key={idx} hoverEffect className="bg-white flex flex-col justify-between h-full border border-gray-150">
-                  <div className="p-6 space-y-4">
-                    <div className="flex items-center gap-2 text-accent text-xs font-bold">
-                      <Calendar className="w-4 h-4" />
-                      <span>{e.date} • {e.time}</span>
-                    </div>
-                    <h3 className="text-lg font-bold text-text-primary">{e.title}</h3>
-                    <p className="text-sm text-text-secondary leading-relaxed line-clamp-3">
-                      {e.description}
-                    </p>
-                  </div>
-                  <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-                    <span className="text-xs text-text-secondary font-medium flex items-center gap-1"><MapPin className="w-3.5 h-3.5 shrink-0" /> {e.location}</span>
-                    <Link to="/events" className="text-secondary text-xs font-bold hover:underline">
-                      Register Now
-                    </Link>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* 10. CONTACT SECTION */}
       <section id="contact-section" className="py-20 md:py-24 bg-gradient-to-br from-primary via-primary-light to-accent text-white">

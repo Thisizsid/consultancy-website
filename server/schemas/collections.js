@@ -30,8 +30,18 @@ const countrySchema = z.object({
 
 const serviceSchema = z.object({
   title: z.string().trim().min(2).max(200),
+  // Each service has its own public page at /services/:slug, so the slug is
+  // part of the stored shape rather than derived at render time — editing a
+  // service's title must not silently move (and 404) its URL.
+  slug: z.string().trim().min(2).max(200).regex(/^[a-z0-9-]+$/),
   icon: z.enum(['Compass', 'School', 'FileText', 'CheckSquare', 'Edit3', 'Award']),
+  // Short blurb — used on the /services grid card and the nav dropdown.
   description: z.string().trim().min(10).max(2000),
+  // Long-form body shown only on the service's own page. Optional so service
+  // rows created before detail pages existed stay valid until filled in.
+  longDescription: z.string().trim().max(8000).optional(),
+  // "What's included" bullet list on the detail page.
+  includes: z.array(z.string().trim().min(1).max(300)).max(30).optional(),
 }).strict();
 
 const testimonialSchema = z.object({
@@ -54,6 +64,9 @@ const eventSchema = z.object({
 const partnerSchema = z.object({
   name: z.string().trim().min(2).max(200),
   logo: url(),
+  // Optional link to the institution's own site. Partners added before this
+  // field existed simply have no value, and render as non-clickable.
+  website: url().optional(),
 }).strict();
 
 const branchSchema = z.object({

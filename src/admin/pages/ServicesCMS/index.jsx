@@ -17,11 +17,18 @@ import Input from '../../../components/ui/Input';
 import { useUiStore } from '../../../store/uiStore';
 import { useDashboardStore } from '../../../store/dashboardStore';
 import ConfirmDialog from '../../../components/ui/ConfirmDialog';
+import { slugify } from '../../../utils/slug';
 
 const serviceSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters'),
+  slug: z.string()
+    .min(2, 'URL slug must be at least 2 characters')
+    .regex(/^[a-z0-9-]+$/, 'Use lowercase letters, numbers and hyphens only'),
   icon: z.enum(['Compass', 'School', 'FileText', 'CheckSquare', 'Edit3', 'Award'], 'Please select an icon representation'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
+  description: z.string().min(10, 'Short description must be at least 10 characters'),
+  longDescription: z.string().max(8000, 'Overview is too long').optional(),
+  // Edited as one bullet-per-line textarea; split into `includes` on submit.
+  includesText: z.string().optional(),
 });
 
 const iconMap = {
@@ -44,14 +51,32 @@ const ServicesCMS = () => {
   const { showToast } = useUiStore();
   const { fetchStats } = useDashboardStore();
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+  // While adding a new service the slug tracks the title, until the admin
+  // types their own. On an existing service it never auto-changes — the page
+  // is already published at that URL.
+  const [slugTouched, setSlugTouched] = useState(false);
+
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(serviceSchema),
     defaultValues: {
       title: '',
+      slug: '',
       icon: 'Compass',
-      description: ''
+      description: '',
+      longDescription: '',
+      includesText: ''
     }
   });
+
+  const titleValue = watch('title');
+  // Hoisted so the slug input can wrap RHF's onChange without re-registering
+  // the field on every keystroke.
+  const slugField = register('slug');
+
+  useEffect(() => {
+    if (editingService || slugTouched) return;
+    setValue('slug', slugify(titleValue || ''), { shouldValidate: false });
+  }, [titleValue, editingService, slugTouched, setValue]);
 
   const fetchServices = async () => {
     setLoading(true);
@@ -71,20 +96,30 @@ const ServicesCMS = () => {
 
   const handleAddClick = () => {
     setEditingService(null);
+    setSlugTouched(false);
     reset({
       title: '',
+      slug: '',
       icon: 'Compass',
-      description: ''
+      description: '',
+      longDescription: '',
+      includesText: ''
     });
     setIsModalOpen(true);
   };
 
   const handleEditClick = (serviceItem) => {
     setEditingService(serviceItem);
+    setSlugTouched(true);
     reset({
       title: serviceItem.title,
+      // Services created before detail pages existed have no stored slug —
+      // show the derived one their page is already reachable at.
+      slug: serviceItem.slug || slugify(serviceItem.title),
       icon: serviceItem.icon,
-      description: serviceItem.description
+      description: serviceItem.description,
+      longDescription: serviceItem.longDescription || '',
+      includesText: (serviceItem.includes || []).join('\n')
     });
     setIsModalOpen(true);
   };
@@ -108,12 +143,23 @@ const ServicesCMS = () => {
 
   const onSubmit = async (formData) => {
     setSubmitting(true);
+    // `includesText` is a UI-only field — the API stores a string array, and
+    // its schema is strict, so it has to be stripped rather than passed on.
+    const { includesText, longDescription, ...rest } = formData;
+    const payload = {
+      ...rest,
+      longDescription: (longDescription || '').trim(),
+      includes: (includesText || '')
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean),
+    };
     try {
       if (editingService) {
-        await updateDocument('services', editingService.id, formData);
+        await updateDocument('services', editingService.id, payload);
         showToast('Service updated.', 'success');
       } else {
-        await createDocument('services', formData);
+        await createDocument('services', payload);
         showToast('Service added.', 'success');
       }
       setIsModalOpen(false);
@@ -133,7 +179,7 @@ const ServicesCMS = () => {
           <h1 className="text-2xl font-extrabold text-primary flex items-center gap-2">
             <Briefcase className="w-6 h-6 text-secondary" /> Services CMS
           </h1>
-          <p className="text-xs text-text-secondary">Configure services page grids and detail cards.</p>
+          <p className="text-xs text-text-secondary">Each service gets its own page at /services/&lt;url&gt;.</p>
         </div>
         <Button variant="secondary" size="md" icon={Plus} onClick={handleAddClick}>
           Add New Service
@@ -162,7 +208,12 @@ const ServicesCMS = () => {
                     <IconEl className="w-4 h-4" />
                   </div>
                 </TableCell>
-                <TableCell className="font-bold text-text-primary">{s.title}</TableCell>
+                <TableCell className="font-bold text-text-primary">
+                  {s.title}
+                  <span className="block text-[11px] font-mono font-normal text-text-secondary">
+                    /services/{s.slug || slugify(s.title)}
+                  </span>
+                </TableCell>
                 <TableCell className="max-w-md truncate">{s.description}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
@@ -184,16 +235,33 @@ const ServicesCMS = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingService ? 'Modify Service Card' : 'Create Service Card'}
-        size="md"
+        title={editingService ? 'Modify Service' : 'Create Service'}
+        size="lg"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <Input 
-            label="Service Title" 
+          <Input
+            label="Service Title"
             placeholder="e.g. Visa Guidance"
             {...register('title')}
             error={errors.title?.message}
           />
+
+          <div>
+            <Input
+              label="Page URL"
+              placeholder="e.g. visa-guidance"
+              {...slugField}
+              onChange={(e) => {
+                setSlugTouched(true);
+                return slugField.onChange(e);
+              }}
+              error={errors.slug?.message}
+            />
+            <p className="mt-1 text-xs text-text-secondary">
+              This service will live at <span className="font-mono font-semibold">/services/{watch('slug') || '…'}</span>
+              {editingService && ' — changing it breaks any existing links.'}
+            </p>
+          </div>
 
           <div>
             <label className="block text-sm font-semibold text-text-primary mb-1">
@@ -215,13 +283,37 @@ const ServicesCMS = () => {
             )}
           </div>
 
-          <Input 
-            label="Service Description"
+          <Input
+            label="Short Description"
             type="textarea"
-            placeholder="Introduce what this service package includes..."
+            rows={2}
+            placeholder="One or two lines — shown on the services grid and the nav dropdown."
             {...register('description')}
             error={errors.description?.message}
           />
+
+          <Input
+            label="Full Overview (service page)"
+            type="textarea"
+            rows={6}
+            placeholder="The long-form explanation shown on this service's own page. Leave blank to reuse the short description."
+            {...register('longDescription')}
+            error={errors.longDescription?.message}
+          />
+
+          <div>
+            <Input
+              label="What's Included"
+              type="textarea"
+              rows={5}
+              placeholder={'One item per line, e.g.\nDocument checklist review\nMock visa interview\nFinancial statement guidance'}
+              {...register('includesText')}
+              error={errors.includesText?.message}
+            />
+            <p className="mt-1 text-xs text-text-secondary">
+              One bullet per line. Leave blank to hide the section on the service page.
+            </p>
+          </div>
 
           <div className="pt-4 border-t border-gray-100 flex items-center justify-end gap-3">
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>

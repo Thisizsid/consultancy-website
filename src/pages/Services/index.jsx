@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import { getAllDocuments } from '../../services/api';
+import { documentSlug } from '../../utils/slug';
 import { 
   Compass, 
   School, 
@@ -28,7 +28,6 @@ const iconMap = {
 const Services = () => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const location = useLocation();
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -43,16 +42,6 @@ const Services = () => {
     };
     fetchServices();
   }, []);
-
-  // Scroll to a specific service card when arriving via a dropdown link (#serviceId)
-  useEffect(() => {
-    if (!loading && location.hash) {
-      const el = document.getElementById(location.hash.slice(1));
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-  }, [loading, location.hash]);
 
   return (
     <div className="bg-surface min-h-screen pt-28 pb-20">
@@ -83,28 +72,35 @@ const Services = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map((s, idx) => {
               const ServiceIcon = iconMap[s.icon] || Compass;
+              // Each card is now a link into that service's own page rather
+              // than an in-page anchor.
               return (
-                <Card
-                  key={idx}
-                  id={s.id || idx}
-                  className="bg-white p-6 md:p-8 flex flex-col justify-between h-full border border-gray-150 hover:border-gray-200 transition-all scroll-mt-28"
+                <Link
+                  key={s.id || idx}
+                  to={`/services/${documentSlug(s)}`}
+                  className="group block h-full"
                 >
-                  <div className="space-y-4">
-                    <div className="w-12 h-12 rounded-md bg-blue-50 text-secondary flex items-center justify-center">
-                      <ServiceIcon className="w-6 h-6" />
+                  <Card className="bg-white p-6 md:p-8 flex flex-col justify-between h-full border border-gray-150 group-hover:border-secondary/40 group-hover:shadow-md transition-all">
+                    <div className="space-y-4">
+                      <div className="w-12 h-12 rounded-md bg-blue-50 text-secondary flex items-center justify-center">
+                        <ServiceIcon className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-xl font-bold text-text-primary group-hover:text-secondary transition-colors">
+                        {s.title}
+                      </h3>
+                      <p className="text-sm text-text-secondary leading-relaxed line-clamp-4">
+                        {s.description}
+                      </p>
                     </div>
-                    <h3 className="text-xl font-bold text-text-primary">{s.title}</h3>
-                    <p className="text-sm text-text-secondary leading-relaxed">
-                      {s.description}
-                    </p>
-                  </div>
-                  <div className="pt-6 border-t border-gray-100 mt-6 flex items-center justify-between text-xs font-semibold">
-                    <span className="text-secondary uppercase tracking-wider">Expert Guidance</span>
-                    <Link to="/contact" className="text-primary hover:text-secondary flex items-center gap-1">
-                      Enquire <ArrowRight className="w-4 h-4" />
-                    </Link>
-                  </div>
-                </Card>
+                    <div className="pt-6 border-t border-gray-100 mt-6 flex items-center justify-between text-xs font-semibold">
+                      <span className="text-secondary uppercase tracking-wider">Expert Guidance</span>
+                      <span className="text-primary group-hover:text-secondary flex items-center gap-1">
+                        Learn more
+                        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                      </span>
+                    </div>
+                  </Card>
+                </Link>
               );
             })}
           </div>

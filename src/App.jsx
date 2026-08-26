@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import Countries from './pages/Countries';
 import CountryDetail from './pages/CountryDetail';
 import Services from './pages/Services';
+import ServiceDetail from './pages/ServiceDetail';
 import Events from './pages/Events';
 import Gallery from './pages/Gallery';
 import Contact from './pages/Contact';
@@ -48,6 +49,7 @@ function App() {
           <Route path="countries" element={<Countries />} />
           <Route path="countries/:slug" element={<CountryDetail />} />
           <Route path="services" element={<Services />} />
+          <Route path="services/:slug" element={<ServiceDetail />} />
           <Route path="events" element={<Events />} />
           <Route path="gallery" element={<Gallery />} />
           <Route path="contact" element={<Contact />} />
