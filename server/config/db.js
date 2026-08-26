@@ -42,6 +42,11 @@ const defaultSiteSettings = {
     { days: 'Sunday - Friday', hours: '9:00 AM - 6:00 PM', closed: false },
     { days: 'Saturday', hours: 'Closed', closed: true },
   ],
+  socialLinks: {
+    facebook: '',
+    instagram: '',
+    tiktok: '',
+  },
 };
 
 // Seed Data

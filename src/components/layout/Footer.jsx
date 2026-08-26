@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Clock } from 'lucide-react';
 import { getDocument } from '../../services/api';
+import { FacebookIcon, InstagramIcon, TiktokIcon } from '../icons/SocialIcons';
 import logo from '../../assets/logo.png';
 
 const DEFAULT_OFFICE_HOURS = [
@@ -20,11 +21,18 @@ const DEFAULT_CONTACT_INFO = {
   email: 'info@lassoconsultancy.com',
 };
 
+const DEFAULT_SOCIAL_LINKS = {
+  facebook: '',
+  instagram: '',
+  tiktok: '',
+};
+
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const [officeHours, setOfficeHours] = useState(DEFAULT_OFFICE_HOURS);
   const [aboutUs, setAboutUs] = useState(DEFAULT_ABOUT_US);
   const [contactInfo, setContactInfo] = useState(DEFAULT_CONTACT_INFO);
+  const [socialLinks, setSocialLinks] = useState(DEFAULT_SOCIAL_LINKS);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -39,6 +47,9 @@ const Footer = () => {
         if (settings.contactInfo) {
           setContactInfo({ ...DEFAULT_CONTACT_INFO, ...settings.contactInfo });
         }
+        if (settings.socialLinks) {
+          setSocialLinks({ ...DEFAULT_SOCIAL_LINKS, ...settings.socialLinks });
+        }
       } catch (error) {
         console.error('Error fetching site settings:', error);
       }
@@ -46,14 +57,20 @@ const Footer = () => {
     fetchSettings();
   }, []);
 
+  const socialItems = [
+    { key: 'facebook', url: socialLinks.facebook, Icon: FacebookIcon, label: 'Facebook' },
+    { key: 'instagram', url: socialLinks.instagram, Icon: InstagramIcon, label: 'Instagram' },
+    { key: 'tiktok', url: socialLinks.tiktok, Icon: TiktokIcon, label: 'TikTok' },
+  ].filter((item) => item.url);
+
   return (
     <footer className="bg-primary text-white border-t border-gray-800">
       <div className="max-w-container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8">
 
           {/* Logo & Branding */}
-          <div className="flex lg:h-full lg:border-r lg:border-white/10 lg:pr-6">
-            <Link to="/" className="flex flex-col items-start gap-4 group self-center">
+          <div className="flex flex-col justify-center gap-5 lg:h-full lg:border-r lg:border-white/10 lg:pr-6">
+            <Link to="/" className="flex flex-col items-start gap-4 group">
               <div className="relative shrink-0">
                 <div className="absolute inset-0 rounded-full bg-secondary/30 blur-lg scale-125 group-hover:bg-secondary/40 transition-colors" />
                 <div className="relative bg-white p-2 rounded-full shadow-lg ring-1 ring-white/10">
@@ -69,6 +86,23 @@ const Footer = () => {
                 <span className="text-[10px] block font-bold text-secondary mt-2 tracking-wide uppercase leading-snug whitespace-nowrap">Int'l Education Consultancy</span>
               </div>
             </Link>
+
+            {socialItems.length > 0 && (
+              <div className="flex items-center gap-3">
+                {socialItems.map(({ key, url, Icon, label }) => (
+                  <a
+                    key={key}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    className="w-9 h-9 rounded-full bg-white/10 hover:bg-secondary flex items-center justify-center transition-colors duration-200"
+                  >
+                    <Icon className="w-4 h-4 text-white" />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* About Us */}
@@ -117,19 +151,19 @@ const Footer = () => {
             <ul className="space-y-3.5 text-sm text-gray-400">
               {contactInfo.address && (
                 <li className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                  <MapPin className="w-5 h-5 text-white shrink-0 mt-0.5" />
                   <span>{contactInfo.address}</span>
                 </li>
               )}
               {contactInfo.phone && (
                 <li className="flex items-center gap-3">
-                  <Phone className="w-4 h-4 text-accent shrink-0" />
+                  <Phone className="w-4 h-4 text-white shrink-0" />
                   <a href={`tel:${contactInfo.phone}`} className="hover:text-white transition-colors">{contactInfo.phone}</a>
                 </li>
               )}
               {contactInfo.email && (
                 <li className="flex items-center gap-3">
-                  <Mail className="w-4 h-4 text-accent shrink-0" />
+                  <Mail className="w-4 h-4 text-white shrink-0" />
                   <a href={`mailto:${contactInfo.email}`} className="hover:text-white transition-colors">{contactInfo.email}</a>
                 </li>
               )}
@@ -142,7 +176,7 @@ const Footer = () => {
             <ul className="space-y-3.5 text-sm text-gray-400">
               {officeHours.map((entry, idx) => (
                 <li key={idx} className="flex items-start gap-3">
-                  <Clock className={`w-5 h-5 shrink-0 mt-0.5 ${entry.closed ? 'text-gray-600' : 'text-accent'}`} />
+                  <Clock className={`w-5 h-5 shrink-0 mt-0.5 ${entry.closed ? 'text-white/30' : 'text-white'}`} />
                   <div>
                     <p className={`font-semibold ${entry.closed ? 'text-gray-500' : 'text-white'}`}>{entry.days}</p>
                     <p className={`text-xs ${entry.closed ? 'text-gray-500' : 'text-gray-400'}`}>{entry.hours}</p>

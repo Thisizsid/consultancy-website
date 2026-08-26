@@ -90,6 +90,11 @@ const settingsSchema = z.object({
     email: z.string().trim().email().max(320),
   }).strict().partial(),
   officeHours: z.array(officeHourEntry).max(20),
+  socialLinks: z.object({
+    facebook: url(),
+    instagram: url(),
+    tiktok: url(),
+  }).strict().partial(),
 }).strict().partial();
 
 // Public write path (the contact/enquiry forms) — deliberately narrow.

@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Clock, Info, Mail, Plus, Trash2, Save } from 'lucide-react';
+import { Clock, Info, Mail, Plus, Trash2, Save, Share2 } from 'lucide-react';
 import { getDocument, updateDocument } from '../../../services/api';
 import Card, { CardBody, CardHeader } from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import { useUiStore } from '../../../store/uiStore';
+
+const optionalUrl = z.string().url('Please enter a valid URL').or(z.literal(''));
 
 const settingsSchema = z.object({
   aboutUs: z.object({
@@ -26,6 +28,11 @@ const settingsSchema = z.object({
       closed: z.boolean(),
     })
   ),
+  socialLinks: z.object({
+    facebook: optionalUrl,
+    instagram: optionalUrl,
+    tiktok: optionalUrl,
+  }),
 });
 
 const SettingsCMS = () => {
@@ -39,6 +46,7 @@ const SettingsCMS = () => {
       aboutUs: { tagline: '', description: '' },
       contactInfo: { address: '', phone: '', email: '' },
       officeHours: [],
+      socialLinks: { facebook: '', instagram: '', tiktok: '' },
     },
   });
 
@@ -53,6 +61,7 @@ const SettingsCMS = () => {
           aboutUs: settings.aboutUs || { tagline: '', description: '' },
           contactInfo: settings.contactInfo || { address: '', phone: '', email: '' },
           officeHours: settings.officeHours || [],
+          socialLinks: settings.socialLinks || { facebook: '', instagram: '', tiktok: '' },
         });
       } catch (err) {
         showToast('Error fetching site settings.', 'error');
@@ -81,7 +90,7 @@ const SettingsCMS = () => {
         <h1 className="text-2xl font-extrabold text-primary flex items-center gap-2">
           <Clock className="w-6 h-6 text-secondary" /> Site Settings
         </h1>
-        <p className="text-xs text-text-secondary">Manage the About Us blurb, contact details, and office hours shown in the public site footer.</p>
+        <p className="text-xs text-text-secondary">Manage the About Us blurb, contact details, office hours, and social links shown in the public site footer.</p>
       </div>
 
       {loading ? (
@@ -192,6 +201,36 @@ const SettingsCMS = () => {
               >
                 Add Row
               </Button>
+            </CardBody>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex items-center gap-2">
+              <Share2 className="w-4 h-4 text-secondary" />
+              <h2 className="font-bold text-text-primary text-sm">Social Media Links (Footer)</h2>
+            </CardHeader>
+            <CardBody className="space-y-4">
+              <p className="text-xs text-text-secondary -mt-1">
+                Leave a field blank to hide that icon in the footer.
+              </p>
+              <Input
+                label="Facebook Page URL"
+                placeholder="https://facebook.com/yourpage"
+                {...register('socialLinks.facebook')}
+                error={errors.socialLinks?.facebook?.message}
+              />
+              <Input
+                label="Instagram Profile URL"
+                placeholder="https://instagram.com/yourhandle"
+                {...register('socialLinks.instagram')}
+                error={errors.socialLinks?.instagram?.message}
+              />
+              <Input
+                label="TikTok Profile URL"
+                placeholder="https://tiktok.com/@yourhandle"
+                {...register('socialLinks.tiktok')}
+                error={errors.socialLinks?.tiktok?.message}
+              />
             </CardBody>
           </Card>
 

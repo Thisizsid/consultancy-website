@@ -329,7 +329,7 @@ const Home = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {countries.map((c) => (
+              {countries.slice(0, 3).map((c) => (
                 <Card key={c.id} hoverEffect className="flex flex-col h-full bg-white">
                   <div className="relative h-48 w-full overflow-hidden shrink-0">
                     <img
@@ -359,6 +359,14 @@ const Home = () => {
               ))}
             </div>
           )}
+
+          {countries.length > 3 && (
+            <div className="text-center mt-12">
+              <Link to="/countries">
+                <Button variant="outline">View All Countries</Button>
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
@@ -374,7 +382,7 @@ const Home = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((s, idx) => {
+            {services.slice(0, 3).map((s, idx) => {
               const ServiceIcon = iconMap[s.icon] || Compass;
               return (
                 <Card key={idx} className="bg-white p-6 md:p-8 flex flex-col justify-between h-full border border-gray-100 hover:border-gray-200">
@@ -391,12 +399,14 @@ const Home = () => {
               );
             })}
           </div>
-          
-          <div className="text-center mt-12">
-            <Link to="/services">
-              <Button variant="outline">Learn More About Services</Button>
-            </Link>
-          </div>
+
+          {services.length > 3 && (
+            <div className="text-center mt-12">
+              <Link to="/services">
+                <Button variant="outline">View All Services</Button>
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
