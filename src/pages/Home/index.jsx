@@ -3,18 +3,13 @@ import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { 
-  Compass, 
-  School, 
-  FileText, 
-  CheckSquare, 
-  Edit3, 
-  Award, 
-  Users, 
-  Globe2, 
-  BookOpen, 
-  Star, 
-  Calendar, 
+import {
+  Users,
+  Globe2,
+  BookOpen,
+  Star,
+  Calendar,
+  Clock,
   ArrowRight,
   ShieldCheck,
   CheckCircle,
@@ -30,16 +25,6 @@ import Card, { CardBody } from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import { useUiStore } from '../../store/uiStore';
 
-// Icons mapping helper for services
-const iconMap = {
-  Compass: Compass,
-  School: School,
-  FileText: FileText,
-  CheckSquare: CheckSquare,
-  Edit3: Edit3,
-  Award: Award
-};
-
 // Zod validation schema for enquiry form
 const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -51,7 +36,6 @@ const contactSchema = z.object({
 
 const Home = () => {
   const [countries, setCountries] = useState([]);
-  const [services, setServices] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
   const [events, setEvents] = useState([]);
   const [partners, setPartners] = useState([]);
@@ -126,18 +110,21 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [cnts, srvs, tstms, evts, ptns] = await Promise.all([
+        const [cnts, tstms, evts, ptns] = await Promise.all([
           getAllDocuments('countries'),
-          getAllDocuments('services'),
           getAllDocuments('testimonials'),
           getAllDocuments('events'),
           getAllDocuments('partners'),
         ]);
-        
+
         setCountries(cnts.filter(c => c.visible !== false));
-        setServices(srvs);
         setTestimonials(tstms.slice(0, 3));
-        setEvents(evts.filter(e => e.status === 'upcoming').slice(0, 3));
+        setEvents(
+          evts
+            .filter(e => e.status === 'upcoming')
+            .sort((a, b) => new Date(a.date) - new Date(b.date))
+            .slice(0, 3)
+        );
         setPartners(ptns);
       } catch (error) {
         console.error('Error fetching landing data:', error);
@@ -168,6 +155,16 @@ const Home = () => {
       setSubmitting(false);
     }
   };
+
+  // `events` is already filtered to upcoming and sorted soonest-first above,
+  // so the first entry is the single next event for the spotlight section.
+  const nextEvent = events[0] || null;
+  const nextEventDate = nextEvent ? new Date(`${nextEvent.date}T00:00:00`) : null;
+  const nextEventDay = nextEventDate ? nextEventDate.getDate() : null;
+  const nextEventMonth = nextEventDate
+    ? nextEventDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
+    : null;
+  const nextEventYear = nextEventDate ? nextEventDate.getFullYear() : null;
 
   return (
     <div className="overflow-hidden">
@@ -370,41 +367,66 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 4. SERVICES SECTION */}
+      {/* 4. UPCOMING EVENT SECTION */}
       <section className="py-20 md:py-24 bg-surface">
         <div className="max-w-container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <Badge variant="warning">OUR SERVICES</Badge>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-primary">How We Support Your Academic Journey</h2>
+            <Badge variant="warning">UPCOMING EVENT</Badge>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-primary">Save the Date for Our Next Event</h2>
             <p className="text-text-secondary leading-relaxed">
-              From application submissions to pre-departure visa simulations, our services cover all facets of your international admissions.
+              Seminars, scholarship workshops, and pre-departure briefings hosted by our expert counselors.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.slice(0, 3).map((s, idx) => {
-              const ServiceIcon = iconMap[s.icon] || Compass;
-              return (
-                <Card key={idx} className="bg-white p-6 md:p-8 flex flex-col justify-between h-full border border-gray-100 hover:border-gray-200">
-                  <div className="space-y-4">
-                    <div className="w-12 h-12 rounded-md bg-secondary/10 text-secondary flex items-center justify-center">
-                      <ServiceIcon className="w-6 h-6" />
-                    </div>
-                    <h3 className="text-lg font-bold text-text-primary">{s.title}</h3>
-                    <p className="text-sm text-text-secondary leading-relaxed">
-                      {s.description}
-                    </p>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
+          {loadingData ? (
+            <div className="flex justify-center py-10">
+              <svg className="animate-spin h-8 w-8 text-secondary" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4m2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+          ) : nextEvent ? (
+            <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-xl border border-gray-150 overflow-hidden md:flex">
+              {/* Date block */}
+              <div className="md:w-56 shrink-0 bg-gradient-to-br from-primary via-primary-light to-accent text-white p-8 flex md:flex-col items-center justify-center gap-4 md:gap-1 text-center">
+                <p className="text-5xl font-extrabold leading-none">{nextEventDay}</p>
+                <div className="text-left md:text-center">
+                  <p className="text-sm font-bold uppercase tracking-widest text-white/80">{nextEventMonth}</p>
+                  <p className="text-xs text-white/60">{nextEventYear}</p>
+                </div>
+              </div>
 
-          {services.length > 3 && (
-            <div className="text-center mt-12">
-              <Link to="/services">
-                <Button variant="outline">View All Services</Button>
-              </Link>
+              {/* Details */}
+              <div className="p-8 md:p-10 flex-1 space-y-5">
+                <h3 className="text-2xl font-bold text-text-primary">{nextEvent.title}</h3>
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-text-secondary font-medium">
+                  <span className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-secondary shrink-0" /> {nextEvent.time}
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-secondary shrink-0" /> {nextEvent.location}
+                  </span>
+                </div>
+                <p className="text-text-secondary leading-relaxed">
+                  {nextEvent.description}
+                </p>
+                <Link to="/events">
+                  <Button variant="secondary">Register Now</Button>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="max-w-2xl mx-auto text-center bg-white rounded-lg border border-dashed border-gray-200 p-12 md:p-16 space-y-4">
+              <div className="w-14 h-14 rounded-full bg-surface flex items-center justify-center mx-auto">
+                <Calendar className="w-6 h-6 text-gray-300" />
+              </div>
+              <h3 className="text-xl font-bold text-text-primary">No Upcoming Events</h3>
+              <p className="text-text-secondary leading-relaxed max-w-md mx-auto">
+                We don't have any seminars or workshops scheduled right now. Check back soon, or reach out directly to discuss your study plans with a counselor.
+              </p>
+              <a href="#contact-section">
+                <Button variant="outline">Talk to a Counselor</Button>
+              </a>
             </div>
           )}
         </div>

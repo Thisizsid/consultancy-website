@@ -51,8 +51,8 @@ if (isProd) {
   if ((process.env.JWT_SECRET || '').length < 32) {
     problems.push('JWT_SECRET is shorter than 32 characters. Use a long random value.');
   }
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    problems.push('SMTP_USER / SMTP_PASS are not set — password reset emails cannot be sent.');
+  if (!process.env.RESEND_API_KEY) {
+    problems.push('RESEND_API_KEY is not set — password reset emails cannot be sent.');
   }
 
   if (problems.length) {

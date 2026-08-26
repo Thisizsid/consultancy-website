@@ -1,52 +1,33 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { generateToken, verifyTokenMiddleware } from '../middleware/auth.js';
 import { getDb } from '../config/db.js';
 import { loginLimiter, forgotPasswordLimiter, resetPasswordLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
-// --- Email Transporter (configured via .env) ---
-// Without an explicit timeout, a blocked/slow SMTP connection (common on
-// PaaS platforms that restrict outbound mail ports) can hang far longer
-// than the platform's own request timeout. The proxy then kills the
-// connection first, the client gets an empty body instead of our JSON
-// error, and `response.json()` fails with a confusing parse error that
-// has nothing to do with the actual (SMTP) problem. Fail fast instead, so
-// the forgot-password route's catch block always gets a chance to send a
-// real error response.
-const MAIL_TIMEOUT_MS = 10000;
+// --- Email (Resend) ---
+// Previously nodemailer over SMTP — Railway's network blocks or badly
+// throttles outbound SMTP, so sends hung until Railway's own proxy timeout
+// cut the connection first, leaving the client parsing an empty response
+// instead of a real error. Resend sends over plain HTTPS, which PaaS
+// platforms don't restrict, and the free tier needs no domain verification
+// to send from its default `onboarding@resend.dev` sender.
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const RESEND_FROM = process.env.RESEND_FROM_EMAIL || 'Lasso Consultancy <onboarding@resend.dev>';
 
-const getTransporter = () => {
-  const pass = (process.env.SMTP_PASS || '').replace(/\s+/g, '');
-  const timeouts = {
-    connectionTimeout: MAIL_TIMEOUT_MS,
-    greetingTimeout: MAIL_TIMEOUT_MS,
-    socketTimeout: MAIL_TIMEOUT_MS,
-  };
-  if (process.env.SMTP_HOST === 'smtp.gmail.com' || !process.env.SMTP_HOST) {
-    return nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: pass,
-      },
-      ...timeouts,
-    });
-  }
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_PORT === '465',
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: pass,
-    },
-    ...timeouts,
-  });
-};
+// An HTTP call can still hang (DNS, a dropped connection, ...) — this is
+// exactly the failure mode above, just less likely over HTTPS than SMTP.
+// Keep the same hard cap so a stuck send still fails fast with clean JSON
+// instead of leaving the platform's proxy to cut it off first.
+const MAIL_TIMEOUT_MS = 10000;
+const withTimeout = (promise, ms) =>
+  Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`Timed out after ${ms}ms`)), ms)),
+  ]);
 
 /**
  * POST /api/auth/login
@@ -160,49 +141,54 @@ router.post('/forgot-password', forgotPasswordLimiter, async (req, res) => {
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         const resetLink = `${frontendUrl}/admin/reset-password?token=${token}`;
 
-        if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+        if (resend) {
           try {
-            const transporter = getTransporter();
-            await transporter.sendMail({
-              from: `"Lasso Consultancy" <${process.env.SMTP_USER}>`,
-              to: notificationEmail,
-              subject: 'Admin Password Reset Link',
-              html: `
-                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 8px;">
-                  <div style="text-align: center; margin-bottom: 24px;">
-                    <h2 style="color: #1e3a5f; margin: 0;">Password Reset Request</h2>
-                    <p style="color: #6b7280; margin-top: 8px;">Lasso International Education Consultancy</p>
+            const { error: sendError } = await withTimeout(
+              resend.emails.send({
+                from: RESEND_FROM,
+                to: notificationEmail,
+                subject: 'Admin Password Reset Link',
+                html: `
+                  <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    <div style="text-align: center; margin-bottom: 24px;">
+                      <h2 style="color: #1e3a5f; margin: 0;">Password Reset Request</h2>
+                      <p style="color: #6b7280; margin-top: 8px;">Lasso International Education Consultancy</p>
+                    </div>
+                    <p style="color: #374151;">A password reset was requested for the admin account.</p>
+                    <p style="color: #374151;">Click the button below to set a new password. This link is valid for <strong>1 hour</strong>.</p>
+                    <div style="text-align: center; margin: 32px 0;">
+                      <a href="${resetLink}"
+                         style="display:inline-block; padding:14px 32px; background:#d4a853; color:#fff;
+                                border-radius:6px; text-decoration:none; font-weight:bold; font-size:16px;">
+                        Reset Password
+                      </a>
+                    </div>
+                    <p style="color: #9ca3af; font-size: 12px;">
+                      Or copy and paste this link into your browser:<br/>
+                      <a href="${resetLink}" style="color:#d4a853; word-break:break-all;">${resetLink}</a>
+                    </p>
+                    <hr style="border:none; border-top:1px solid #e5e7eb; margin: 24px 0;"/>
+                    <p style="color:#9ca3af; font-size:11px; text-align:center;">
+                      If you did not request this, you can safely ignore this email.
+                    </p>
                   </div>
-                  <p style="color: #374151;">A password reset was requested for the admin account.</p>
-                  <p style="color: #374151;">Click the button below to set a new password. This link is valid for <strong>1 hour</strong>.</p>
-                  <div style="text-align: center; margin: 32px 0;">
-                    <a href="${resetLink}"
-                       style="display:inline-block; padding:14px 32px; background:#d4a853; color:#fff;
-                              border-radius:6px; text-decoration:none; font-weight:bold; font-size:16px;">
-                      Reset Password
-                    </a>
-                  </div>
-                  <p style="color: #9ca3af; font-size: 12px;">
-                    Or copy and paste this link into your browser:<br/>
-                    <a href="${resetLink}" style="color:#d4a853; word-break:break-all;">${resetLink}</a>
-                  </p>
-                  <hr style="border:none; border-top:1px solid #e5e7eb; margin: 24px 0;"/>
-                  <p style="color:#9ca3af; font-size:11px; text-align:center;">
-                    If you did not request this, you can safely ignore this email.
-                  </p>
-                </div>
-              `,
-            });
-            console.log(`Password reset email sent to: ${notificationEmail}`);
+                `,
+              }),
+              MAIL_TIMEOUT_MS
+            );
+            if (sendError) {
+              throw new Error(sendError.message || 'Resend API returned an error');
+            }
+            console.log(`Password reset email sent via Resend to: ${notificationEmail}`);
           } catch (emailErr) {
             console.error('Email send failed:', emailErr.message);
             // Fallback: log link to console
             console.log(`\nEmail failed. Reset link:\n${resetLink}\n`);
-            return res.status(500).json({ error: 'Failed to send reset email. Check SMTP configuration in .env' });
+            return res.status(500).json({ error: 'Failed to send reset email. Check RESEND_API_KEY configuration.' });
           }
         } else {
           // Dev mode — print link to console
-          console.log(`\nSMTP not configured. Password reset link:\n${resetLink}\n`);
+          console.log(`\nRESEND_API_KEY not configured. Password reset link:\n${resetLink}\n`);
         }
 
         return res.json({ message: `Reset link sent to ${notificationEmail}. Check your inbox.` });

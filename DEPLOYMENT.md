@@ -41,8 +41,8 @@ openssl rand -hex 48
 
 `NODE_ENV=production` activates boot-time configuration validation. The server
 **refuses to start** if `JWT_SECRET` is missing, too short, or still the old
-default; if SMTP is unset; or if `FRONTEND_URL` points at localhost (which
-would make password-reset emails link to the recipient's own machine).
+default; if `RESEND_API_KEY` is unset; or if `FRONTEND_URL` points at localhost
+(which would make password-reset emails link to the recipient's own machine).
 
 ### Keep it running with systemd
 
