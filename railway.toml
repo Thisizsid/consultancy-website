@@ -6,12 +6,15 @@
 # the site loads fine, since GETs are served by the static host.
 #
 # Two package.json trees need installing: the root one (frontend) and
-# server/ (backend, its own dependencies). The frontend must be built
-# (`vite build` -> dist/) before the backend starts, since server/index.js
-# serves dist/ as static files with an SPA fallback.
+# server/ (backend, its own dependencies). Nixpacks auto-installs the root
+# one on its own before buildCommand ever runs (visible as "npm install
+# cached" in build logs) — re-running `npm ci` here on top of that collided
+# with the already-populated node_modules (EBUSY on node_modules/.vite,
+# since `ci` first wipes node_modules before reinstalling). So this only
+# needs to build the frontend and install server/'s separate deps.
 
 [build]
-buildCommand = "npm ci && npm run build && npm --prefix server ci"
+buildCommand = "npm run build && npm --prefix server ci"
 
 [deploy]
 startCommand = "npm run server"
