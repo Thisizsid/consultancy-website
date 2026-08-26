@@ -6,7 +6,11 @@ import bcrypt from 'bcryptjs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const dbPath = path.resolve(__dirname, '../database.sqlite');
+// DATA_DIR points at a persistent volume in production (e.g. Railway, where
+// everything outside the mounted volume is wiped on every redeploy). Not
+// set locally, so dev keeps writing next to the source as before.
+const dataDir = process.env.DATA_DIR || path.resolve(__dirname, '..');
+const dbPath = path.join(dataDir, 'database.sqlite');
 const db = new sqlite3.Database(dbPath);
 
 const COLLECTIONS = [

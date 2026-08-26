@@ -10,7 +10,11 @@ const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
-const uploadDir = path.resolve(__dirname, '../uploads');
+// Same DATA_DIR convention as config/db.js — points at a persistent volume
+// in production so uploaded files survive redeploys instead of living in
+// the (ephemeral) app directory.
+const dataDir = process.env.DATA_DIR || path.resolve(__dirname, '..');
+const uploadDir = path.join(dataDir, 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }

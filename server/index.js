@@ -69,8 +69,10 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Broad backstop against request floods; per-route limiters are stricter.
 app.use('/api', generalLimiter);
 
-// Serve static uploaded files
-const uploadsPath = path.resolve(__dirname, 'uploads');
+// Serve static uploaded files. Same DATA_DIR convention as
+// config/db.js / routes/upload.js — must point at the same directory those
+// write to, or newly uploaded files 404 until the next redeploy.
+const uploadsPath = path.join(process.env.DATA_DIR || __dirname, 'uploads');
 app.use('/uploads', express.static(uploadsPath, {
   maxAge: '7d',
   // Never let a stored file be interpreted as something executable
