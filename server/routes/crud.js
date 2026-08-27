@@ -15,6 +15,7 @@ const VALID_COLLECTIONS = [
   'branches',
   'enquiries',
   'gallery',
+  'hero',
   'settings'
 ];
 

@@ -15,6 +15,7 @@ import {
   GitBranch,
   ImageIcon,
   KeyRound,
+  Presentation,
   Settings
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
@@ -49,6 +50,7 @@ const AdminLayout = () => {
   const links = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Enquiries', path: '/admin/enquiries', icon: Inbox },
+    { name: 'Homepage Hero', path: '/admin/hero', icon: Presentation },
     { name: 'Countries CMS', path: '/admin/countries', icon: Globe },
     { name: 'Services CMS', path: '/admin/services', icon: Briefcase },
     { name: 'Events CMS', path: '/admin/events', icon: Calendar },

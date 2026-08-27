@@ -77,7 +77,6 @@ const Navbar = () => {
       items: dropdownData.countries.map((c) => ({
         key: c.id,
         label: c.name,
-        sub: c.tuitionFees ? `From ${c.tuitionFees.split('/')[0].trim()}/yr` : undefined,
         icon: Globe2,
         path: `/countries/${c.slug}`,
       })),
@@ -89,7 +88,6 @@ const Navbar = () => {
       items: dropdownData.services.map((s, idx) => ({
         key: s.id || idx,
         label: s.title,
-        sub: s.description ? `${s.description.slice(0, 48).trim()}${s.description.length > 48 ? '…' : ''}` : undefined,
         icon: SERVICE_ICON_MAP[s.icon] || Compass,
         path: `/services/${documentSlug(s)}`,
       })),
@@ -101,7 +99,6 @@ const Navbar = () => {
       items: dropdownData.branches.map((b, idx) => ({
         key: b.id || idx,
         label: b.name,
-        sub: b.city,
         icon: MapPin,
         path: `/branches#${b.id || idx}`,
       })),

@@ -22,6 +22,7 @@ const COLLECTIONS = [
   'branches',
   'enquiries',
   'gallery',
+  'hero',
   'settings',
   'users'
 ];

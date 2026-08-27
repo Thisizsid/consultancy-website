@@ -89,6 +89,26 @@ const gallerySchema = z.object({
   createdAt: z.string().trim().optional(),
 }).strict();
 
+/**
+ * Homepage hero slides. `image` is required and normally points at our own
+ * /uploads — the whole reason this collection exists is so hero photography
+ * is served from our origin instead of a third-party CDN that ad blockers and
+ * filtered networks routinely block.
+ */
+const heroSchema = z.object({
+  image: url(),
+  badge: z.string().trim().min(2).max(120),
+  title: z.string().trim().min(2).max(200),
+  description: z.string().trim().min(10).max(1000),
+  primaryBtnText: z.string().trim().max(60).optional(),
+  primaryBtnLink: z.string().trim().max(500).optional(),
+  secondaryBtnText: z.string().trim().max(60).optional(),
+  secondaryBtnLink: z.string().trim().max(500).optional(),
+  // Ascending; ties fall back to insertion order on the client.
+  order: z.coerce.number().int().min(0).max(999).optional(),
+  status: z.enum(['active', 'inactive']),
+}).strict();
+
 const officeHourEntry = z.object({
   days: z.string().trim().min(1).max(100),
   hours: z.string().trim().min(1).max(100),
@@ -144,6 +164,7 @@ const SCHEMAS = {
   partners: { create: partnerSchema, update: partnerSchema.partial() },
   branches: { create: branchSchema, update: branchSchema.partial() },
   gallery: { create: gallerySchema, update: gallerySchema.partial() },
+  hero: { create: heroSchema, update: heroSchema.partial() },
   settings: { create: settingsSchema, update: settingsSchema },
   enquiries: { create: enquiryCreateSchema, update: enquiryUpdateSchema },
 };

@@ -34,6 +34,33 @@ const contactSchema = z.object({
   message: z.string().min(10, 'Message must be at least 10 characters'),
 });
 
+/**
+ * Wraps a hero CTA in the right kind of link. Admin-entered links may be an
+ * in-page anchor ("#contact-section"), an app route ("/countries"), or an
+ * external URL — and a route needs <Link> to avoid a full page reload, while
+ * the other two need a plain <a>. Renders the button unwrapped rather than
+ * linking nowhere when no link was given.
+ */
+const HeroButtonLink = ({ to, children }) => {
+  if (!to) return <div className="w-full sm:w-auto">{children}</div>;
+
+  const isInternalRoute = to.startsWith('/') && !to.startsWith('//');
+  if (isInternalRoute) {
+    return <Link to={to} className="w-full sm:w-auto">{children}</Link>;
+  }
+
+  const isExternal = /^https?:\/\//i.test(to);
+  return (
+    <a
+      href={to}
+      className="w-full sm:w-auto"
+      {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+    >
+      {children}
+    </a>
+  );
+};
+
 const Home = () => {
   const [countries, setCountries] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
@@ -47,12 +74,16 @@ const Home = () => {
 
   // Hero slide states
   const [currentSlide, setCurrentSlide] = useState(0);
-  // Hero photos are hotlinked from a third-party CDN, so any one of them can
-  // fail to load (network blip, CDN throttling, a content blocker). Track the
-  // failures so those slides fall back to a branded gradient rather than
-  // leaving the headline sitting on an empty black box.
+  const [cmsSlides, setCmsSlides] = useState([]);
+  // A slide's photo can still fail to load — a CMS upload that 404s, or one of
+  // the hotlinked fallback photos being blocked. Track the failures so those
+  // slides show a branded gradient rather than leaving the headline sitting on
+  // an empty black box.
   const [failedSlides, setFailedSlides] = useState({});
-  const heroSlides = [
+  // Used only until the admin adds hero slides in the CMS. These photos are
+  // hotlinked from a third-party CDN and so can be blocked; that's precisely
+  // why the CMS-managed slides (served from our own /uploads) supersede them.
+  const defaultHeroSlides = [
     {
       image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1600&auto=format&fit=crop&q=80',
       badge: 'Trusted Global Admissions Partner',
@@ -85,11 +116,21 @@ const Home = () => {
     }
   ];
 
+  // CMS slides win outright once any exist, so the admin never ends up with
+  // their photos mixed in among the stock defaults.
+  const heroSlides = cmsSlides.length > 0 ? cmsSlides : defaultHeroSlides;
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 6000);
     return () => clearInterval(timer);
+  }, [heroSlides.length]);
+
+  // Guards against a stale index when the CMS slide count shrinks (a slide
+  // deleted or deactivated) while a later slide is showing.
+  useEffect(() => {
+    setCurrentSlide((prev) => (prev >= heroSlides.length ? 0 : prev));
   }, [heroSlides.length]);
 
   const prevSlide = () => {
@@ -115,12 +156,19 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [cnts, tstms, evts, ptns] = await Promise.all([
+        const [cnts, tstms, evts, ptns, hero] = await Promise.all([
           getAllDocuments('countries'),
           getAllDocuments('testimonials'),
           getAllDocuments('events'),
           getAllDocuments('partners'),
+          getAllDocuments('hero'),
         ]);
+
+        setCmsSlides(
+          hero
+            .filter((s) => s.status === 'active' && s.image)
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+        );
 
         setCountries(cnts.filter(c => c.visible !== false));
         setTestimonials(tstms.slice(0, 3));
@@ -228,24 +276,20 @@ const Home = () => {
                       <div className={`flex flex-col sm:flex-row items-center gap-4 pt-2 transition-all duration-700 delay-900 ${
                         isActive ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
                       }`}>
-                        <a href={slide.primaryBtnLink} className="w-full sm:w-auto">
-                          <Button variant="secondary" size="lg" className="w-full sm:w-auto shadow-md hover:shadow-lg">
-                            {slide.primaryBtnText}
-                          </Button>
-                        </a>
-                        
-                        {slide.secondaryBtnLink.startsWith('#') ? (
-                          <a href={slide.secondaryBtnLink} className="w-full sm:w-auto">
+                        {slide.primaryBtnText && (
+                          <HeroButtonLink to={slide.primaryBtnLink}>
+                            <Button variant="secondary" size="lg" className="w-full sm:w-auto shadow-md hover:shadow-lg">
+                              {slide.primaryBtnText}
+                            </Button>
+                          </HeroButtonLink>
+                        )}
+
+                        {slide.secondaryBtnText && (
+                          <HeroButtonLink to={slide.secondaryBtnLink}>
                             <Button variant="outline" size="lg" className="w-full sm:w-auto text-white border-white hover:bg-white/10">
                               {slide.secondaryBtnText}
                             </Button>
-                          </a>
-                        ) : (
-                          <Link to={slide.secondaryBtnLink} className="w-full sm:w-auto">
-                            <Button variant="outline" size="lg" className="w-full sm:w-auto text-white border-white hover:bg-white/10">
-                              {slide.secondaryBtnText}
-                            </Button>
-                          </Link>
+                          </HeroButtonLink>
                         )}
                       </div>
 

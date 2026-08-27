@@ -26,6 +26,7 @@ import PartnersCMS from './admin/pages/PartnersCMS';
 import EnquiriesCMS from './admin/pages/EnquiriesCMS';
 import BranchesCMS from './admin/pages/BranchesCMS';
 import GalleryCMS from './admin/pages/GalleryCMS';
+import HeroCMS from './admin/pages/HeroCMS';
 import SettingsCMS from './admin/pages/SettingsCMS';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ResetPassword from './admin/pages/ResetPassword';
@@ -71,6 +72,7 @@ function App() {
         >
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="hero" element={<HeroCMS />} />
           <Route path="countries" element={<CountriesCMS />} />
           <Route path="services" element={<ServicesCMS />} />
           <Route path="events" element={<EventsCMS />} />
