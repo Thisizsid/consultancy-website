@@ -47,6 +47,11 @@ const Home = () => {
 
   // Hero slide states
   const [currentSlide, setCurrentSlide] = useState(0);
+  // Hero photos are hotlinked from a third-party CDN, so any one of them can
+  // fail to load (network blip, CDN throttling, a content blocker). Track the
+  // failures so those slides fall back to a branded gradient rather than
+  // leaving the headline sitting on an empty black box.
+  const [failedSlides, setFailedSlides] = useState({});
   const heroSlides = [
     {
       image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1600&auto=format&fit=crop&q=80',
@@ -184,11 +189,16 @@ const Home = () => {
               >
                 {/* Image background with dark overlay */}
                 <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-transparent z-10 pointer-events-none" />
-                <img
-                  src={slide.image}
-                  alt={slide.title}
-                  className="w-full h-full object-cover object-center transform transition-transform duration-10000 ease-linear"
-                />
+                {failedSlides[index] ? (
+                  <div className="w-full h-full bg-gradient-to-br from-primary via-primary-light to-accent" />
+                ) : (
+                  <img
+                    src={slide.image}
+                    alt={slide.title}
+                    onError={() => setFailedSlides((prev) => ({ ...prev, [index]: true }))}
+                    className="w-full h-full object-cover object-center transform transition-transform duration-10000 ease-linear"
+                  />
+                )}
                 
                 {/* Content Container */}
                 {/* Top padding clears the transparent fixed navbar on small screens */}

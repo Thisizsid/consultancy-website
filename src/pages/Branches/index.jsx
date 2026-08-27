@@ -7,8 +7,10 @@ import {
   Mail,
   Clock,
   Building2,
+  Navigation,
 } from 'lucide-react';
 import { getAllDocuments } from '../../services/api';
+import { mapLinkFor } from '../../utils/maps';
 import Badge from '../../components/ui/Badge';
 
 const Branches = () => {
@@ -138,6 +140,20 @@ const Branches = () => {
                       </div>
                     )}
                   </div>
+
+                  {/* Pushed to the card's base so buttons line up across a row
+                      of cards whose contact details differ in length. */}
+                  {mapLinkFor(branch) && (
+                    <a
+                      href={mapLinkFor(branch)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-auto inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-secondary/30 bg-secondary/5 text-secondary text-sm font-bold hover:bg-secondary hover:text-white focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 transition-colors"
+                    >
+                      <Navigation className="w-4 h-4 shrink-0" />
+                      Get Directions
+                    </a>
+                  )}
                 </div>
               ))}
             </div>

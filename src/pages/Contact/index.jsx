@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { createDocument } from '../../services/api';
-import { Mail, Phone, MapPin, Clock, MessageSquare, CheckCircle, ArrowRight } from 'lucide-react';
+import { createDocument, getDocument } from '../../services/api';
+import { Mail, Phone, MapPin, Clock, MessageSquare, CheckCircle, ArrowRight, Navigation } from 'lucide-react';
+import { mapLinkFor } from '../../utils/maps';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Card, { CardBody } from '../../components/ui/Card';
@@ -18,10 +19,30 @@ const contactFormSchema = z.object({
   message: z.string().min(10, 'Message must be at least 10 characters'),
 });
 
+// Used until the settings request resolves, and if it fails.
+const DEFAULT_OFFICE_ADDRESS = '102 Premium Plaza, Parliament Road, Kathmandu, Nepal';
+
 const Contact = () => {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [officeAddress, setOfficeAddress] = useState(DEFAULT_OFFICE_ADDRESS);
   const { showToast } = useUiStore();
+
+  // Same site settings the footer reads, so the office address here follows
+  // the CMS instead of drifting from it.
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const settings = await getDocument('settings', 'site_settings');
+        if (settings?.contactInfo?.address) {
+          setOfficeAddress(settings.contactInfo.address);
+        }
+      } catch (error) {
+        console.error('Error fetching site settings:', error);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(contactFormSchema),
@@ -86,7 +107,7 @@ const Contact = () => {
                   <MapPin className="w-6 h-6 text-secondary shrink-0 mt-0.5" />
                   <div>
                     <p className="font-bold text-text-primary">Kathmandu Branch</p>
-                    <p className="mt-0.5">102 Premium Plaza, Parliament Road, Kathmandu, Nepal</p>
+                    <p className="mt-0.5">{officeAddress}</p>
                   </div>
                 </li>
 
@@ -119,25 +140,27 @@ const Contact = () => {
               </ul>
             </Card>
 
-            {/* Map Embed Container */}
-            <Card className="bg-white border border-gray-150 overflow-hidden h-64 relative">
-              <div className="absolute inset-0 bg-gray-100 flex items-center justify-center p-6 text-center">
-                <div className="space-y-2">
-                  <MapPin className="w-10 h-10 text-accent mx-auto animate-bounce" />
-                  <h4 className="font-bold text-primary">Interactive Office Map</h4>
-                  <p className="text-xs text-text-secondary">
-                    102 Premium Plaza, Parliament Road, Kathmandu, Nepal
-                  </p>
-                  <a 
-                    href="https://maps.google.com" 
-                    target="_blank" 
-                    rel="noreferrer"
-                    className="text-xs text-secondary font-bold hover:underline pt-2 inline-flex items-center gap-1"
-                  >
-                    Open in Google Maps
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </a>
-                </div>
+            {/* Directions card — a link rather than an embedded map, so there's
+                no API key, no third-party script that can fail to load, and no
+                map cookies dropped on visitors. On mobile it hands off to the
+                native Maps app. */}
+            <Card className="bg-white border border-gray-150 overflow-hidden relative">
+              <div className="p-6 text-center space-y-3">
+                <MapPin className="w-10 h-10 text-accent mx-auto" />
+                <h4 className="font-bold text-primary">Find Our Office</h4>
+                <p className="text-xs text-text-secondary leading-relaxed">
+                  {officeAddress}
+                </p>
+                <a
+                  href={mapLinkFor({ address: officeAddress })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-secondary text-white text-sm font-bold hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 transition-colors"
+                >
+                  <Navigation className="w-4 h-4 shrink-0" />
+                  Get Directions
+                  <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+                </a>
               </div>
             </Card>
 

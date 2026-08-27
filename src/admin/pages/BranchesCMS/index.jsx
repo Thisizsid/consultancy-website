@@ -8,7 +8,8 @@ import {
   updateDocument,
   deleteDocument,
 } from '../../../services/api';
-import { GitBranch, Plus, Edit2, Trash2, MapPin, Phone, Mail, Clock } from 'lucide-react';
+import { GitBranch, Plus, Edit2, Trash2, MapPin, Phone, Mail, Clock, ExternalLink } from 'lucide-react';
+import { mapLinkFor } from '../../../utils/maps';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import Badge from '../../../components/ui/Badge';
@@ -27,6 +28,7 @@ const branchSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   openingHours: z.string().min(3, 'Opening hours are required (e.g. Mon–Fri: 9AM – 6PM)'),
   status: z.enum(['active', 'inactive']),
+  mapUrl: z.string().url('Please enter a valid map link (including https://)').or(z.string().length(0)).optional(),
 });
 
 const BranchesCMS = () => {
@@ -55,6 +57,7 @@ const BranchesCMS = () => {
       email: '',
       openingHours: '',
       status: 'active',
+      mapUrl: '',
     },
   });
 
@@ -85,6 +88,7 @@ const BranchesCMS = () => {
       email: '',
       openingHours: '',
       status: 'active',
+      mapUrl: '',
     });
     setIsModalOpen(true);
   };
@@ -99,6 +103,7 @@ const BranchesCMS = () => {
       email: branch.email,
       openingHours: branch.openingHours,
       status: branch.status,
+      mapUrl: branch.mapUrl || '',
     });
     setIsModalOpen(true);
   };
@@ -189,6 +194,15 @@ const BranchesCMS = () => {
                   <MapPin className="w-3.5 h-3.5 text-accent shrink-0 mt-0.5" />
                   <span className="line-clamp-2">{branch.address}</span>
                 </span>
+                <a
+                  href={mapLinkFor(branch)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-secondary hover:underline"
+                >
+                  {branch.mapUrl ? 'Pinned link' : 'Searched by address'}
+                  <ExternalLink className="w-3 h-3 shrink-0" />
+                </a>
               </TableCell>
               <TableCell className="text-xs space-y-1">
                 <span className="flex items-center gap-1 text-text-secondary">
@@ -247,6 +261,19 @@ const BranchesCMS = () => {
             {...register('address')}
             error={errors.address?.message}
           />
+
+          <div>
+            <Input
+              label="Google Maps Link (optional)"
+              placeholder="https://maps.app.goo.gl/..."
+              {...register('mapUrl')}
+              error={errors.mapUrl?.message}
+            />
+            <p className="mt-1 text-[11px] text-text-secondary">
+              Open the branch in Google Maps, tap Share, and paste the link here to pin the exact
+              entrance. Leave blank and the Get Directions button will search by the address above.
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input

@@ -77,6 +77,9 @@ const branchSchema = z.object({
   email: z.string().trim().email().max(320),
   openingHours: z.string().trim().min(3).max(300),
   status: z.enum(['active', 'inactive']),
+  // Optional Google Maps share link pinning the exact entrance. Branches
+  // without one fall back to an address-derived search link client-side.
+  mapUrl: url().optional(),
 }).strict();
 
 const gallerySchema = z.object({
