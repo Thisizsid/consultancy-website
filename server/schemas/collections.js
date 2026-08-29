@@ -80,6 +80,12 @@ const branchSchema = z.object({
   // Optional Google Maps share link pinning the exact entrance. Branches
   // without one fall back to an address-derived search link client-side.
   mapUrl: url().optional(),
+  // Per-branch social profiles. Separate from the site-wide links in
+  // `settings` — each office runs its own pages. Any left blank simply
+  // don't render on the branch card.
+  facebook: url().optional(),
+  instagram: url().optional(),
+  tiktok: url().optional(),
 }).strict();
 
 const gallerySchema = z.object({

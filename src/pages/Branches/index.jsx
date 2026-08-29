@@ -12,6 +12,15 @@ import {
 import { getAllDocuments } from '../../services/api';
 import { mapLinkFor } from '../../utils/maps';
 import Badge from '../../components/ui/Badge';
+import { FacebookIcon, InstagramIcon, TiktokIcon } from '../../components/icons/SocialIcons';
+
+/** Per-branch social profiles, in a fixed display order. */
+const socialItemsFor = (branch) =>
+  [
+    { key: 'facebook', url: branch.facebook, Icon: FacebookIcon, label: 'Facebook' },
+    { key: 'instagram', url: branch.instagram, Icon: InstagramIcon, label: 'Instagram' },
+    { key: 'tiktok', url: branch.tiktok, Icon: TiktokIcon, label: 'TikTok' },
+  ].filter((item) => item.url);
 
 const Branches = () => {
   const [branches, setBranches] = useState([]);
@@ -140,6 +149,24 @@ const Branches = () => {
                       </div>
                     )}
                   </div>
+
+                  {socialItemsFor(branch).length > 0 && (
+                    <div className="flex items-center gap-2">
+                      {socialItemsFor(branch).map(({ key, url, Icon, label }) => (
+                        <a
+                          key={key}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`${branch.name} on ${label}`}
+                          title={label}
+                          className="w-9 h-9 rounded-full bg-secondary/10 text-secondary hover:bg-secondary hover:text-white focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 flex items-center justify-center transition-colors"
+                        >
+                          <Icon className="w-4 h-4" />
+                        </a>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Pushed to the card's base so buttons line up across a row
                       of cards whose contact details differ in length. */}

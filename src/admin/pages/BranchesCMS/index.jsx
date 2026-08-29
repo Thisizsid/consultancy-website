@@ -20,6 +20,12 @@ import { useUiStore } from '../../../store/uiStore';
 import { useDashboardStore } from '../../../store/dashboardStore';
 import ConfirmDialog from '../../../components/ui/ConfirmDialog';
 
+const optionalUrl = z
+  .string()
+  .url('Please enter a valid URL (including https://)')
+  .or(z.string().length(0))
+  .optional();
+
 const branchSchema = z.object({
   name: z.string().min(2, 'Branch name must be at least 2 characters'),
   address: z.string().min(5, 'Full address is required'),
@@ -29,6 +35,9 @@ const branchSchema = z.object({
   openingHours: z.string().min(3, 'Opening hours are required (e.g. Mon–Fri: 9AM – 6PM)'),
   status: z.enum(['active', 'inactive']),
   mapUrl: z.string().url('Please enter a valid map link (including https://)').or(z.string().length(0)).optional(),
+  facebook: optionalUrl,
+  instagram: optionalUrl,
+  tiktok: optionalUrl,
 });
 
 const BranchesCMS = () => {
@@ -58,6 +67,9 @@ const BranchesCMS = () => {
       openingHours: '',
       status: 'active',
       mapUrl: '',
+      facebook: '',
+      instagram: '',
+      tiktok: '',
     },
   });
 
@@ -89,6 +101,9 @@ const BranchesCMS = () => {
       openingHours: '',
       status: 'active',
       mapUrl: '',
+      facebook: '',
+      instagram: '',
+      tiktok: '',
     });
     setIsModalOpen(true);
   };
@@ -104,6 +119,9 @@ const BranchesCMS = () => {
       openingHours: branch.openingHours,
       status: branch.status,
       mapUrl: branch.mapUrl || '',
+      facebook: branch.facebook || '',
+      instagram: branch.instagram || '',
+      tiktok: branch.tiktok || '',
     });
     setIsModalOpen(true);
   };
@@ -312,6 +330,33 @@ const BranchesCMS = () => {
               {errors.status && (
                 <p className="mt-1 text-xs text-red-600 font-medium">{errors.status.message}</p>
               )}
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-gray-100">
+            <h3 className="text-sm font-bold text-text-primary">Social Media (optional)</h3>
+            <p className="mt-0.5 text-[11px] text-text-secondary">
+              Links to this branch's own pages. Leave blank to hide the icon on the branch card.
+            </p>
+            <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Input
+                label="Facebook"
+                placeholder="https://facebook.com/branchpage"
+                {...register('facebook')}
+                error={errors.facebook?.message}
+              />
+              <Input
+                label="Instagram"
+                placeholder="https://instagram.com/branchhandle"
+                {...register('instagram')}
+                error={errors.instagram?.message}
+              />
+              <Input
+                label="TikTok"
+                placeholder="https://tiktok.com/@branchhandle"
+                {...register('tiktok')}
+                error={errors.tiktok?.message}
+              />
             </div>
           </div>
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { createDocument, getDocument } from '../../services/api';
+import { createDocument, getDocument, getAllDocuments } from '../../services/api';
 import { Mail, Phone, MapPin, Clock, MessageSquare, CheckCircle, ArrowRight, Navigation } from 'lucide-react';
 import { mapLinkFor } from '../../utils/maps';
 import Button from '../../components/ui/Button';
@@ -22,10 +22,25 @@ const contactFormSchema = z.object({
 // Used until the settings request resolves, and if it fails.
 const DEFAULT_OFFICE_ADDRESS = '102 Premium Plaza, Parliament Road, Kathmandu, Nepal';
 
+// The destination list normally mirrors the Countries CMS so adding or
+// renaming a country there updates this dropdown too. These are the fallback
+// options used only if that request fails or the CMS has no visible
+// countries — an enquiry form with a single empty dropdown is worse than a
+// slightly stale one.
+const FALLBACK_COUNTRIES = [
+  'Australia',
+  'Canada',
+  'United Kingdom',
+  'United States',
+  'New Zealand',
+  'Europe',
+];
+
 const Contact = () => {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [officeAddress, setOfficeAddress] = useState(DEFAULT_OFFICE_ADDRESS);
+  const [countryOptions, setCountryOptions] = useState(FALLBACK_COUNTRIES);
   const { showToast } = useUiStore();
 
   // Same site settings the footer reads, so the office address here follows
@@ -42,6 +57,27 @@ const Contact = () => {
       }
     };
     fetchSettings();
+  }, []);
+
+  // Destination options come from the Countries CMS, using the same
+  // `visible !== false` rule the navbar dropdown applies.
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        const countries = await getAllDocuments('countries');
+        const names = countries
+          .filter((c) => c.visible !== false)
+          .map((c) => c.name)
+          .filter(Boolean)
+          .sort((a, b) => a.localeCompare(b));
+        if (names.length > 0) {
+          setCountryOptions(names);
+        }
+      } catch (error) {
+        console.error('Error fetching countries:', error);
+      }
+    };
+    fetchCountries();
   }, []);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
@@ -218,12 +254,11 @@ const Contact = () => {
                       {...register('country')}
                     >
                       <option value="">-- Select Country --</option>
-                      <option value="Australia">Australia</option>
-                      <option value="Canada">Canada</option>
-                      <option value="UK">United Kingdom</option>
-                      <option value="USA">United States</option>
-                      <option value="New Zealand">New Zealand</option>
-                      <option value="Europe">Europe</option>
+                      {countryOptions.map((name) => (
+                        <option key={name} value={name}>
+                          {name}
+                        </option>
+                      ))}
                     </select>
                     {errors.country && (
                       <p className="mt-1 text-xs text-red-600 font-medium">{errors.country.message}</p>
