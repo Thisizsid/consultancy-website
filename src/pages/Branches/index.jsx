@@ -12,7 +12,8 @@ import {
 } from 'lucide-react';
 import { getAllDocuments } from '../../services/api';
 import { mapLinkFor } from '../../utils/maps';
-import { usePrimaryHeroImage } from '../../hooks/usePrimaryHeroImage';
+import { useHeroImages } from '../../hooks/useHeroImages';
+import HeroPhotoSlideshow from '../../components/common/HeroPhotoSlideshow';
 import Badge from '../../components/ui/Badge';
 import { FacebookIcon, InstagramIcon, TiktokIcon } from '../../components/icons/SocialIcons';
 
@@ -31,7 +32,7 @@ const Branches = () => {
   const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
-  const heroImage = usePrimaryHeroImage();
+  const heroImages = useHeroImages();
 
   useEffect(() => {
     const fetchBranches = async () => {
@@ -59,29 +60,27 @@ const Branches = () => {
 
   return (
     <div className="overflow-hidden">
-      {/* PAGE HERO */}
-      <section className="relative bg-primary text-white pt-32 pb-16 md:pt-40 md:pb-24 overflow-hidden">
-        {/* Same photo the homepage hero currently shows first, so the
-            Branches page reads as a continuation of it rather than a
-            differently-branded section. */}
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-25 filter blur-sm"
-          style={{ backgroundImage: `url(${heroImage})` }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary-light/90 to-accent/80" />
-        <div className="absolute inset-0 opacity-10 pointer-events-none"
+      {/* PAGE HERO — same photo slideshow and sizing as the homepage hero,
+          so this reads as a continuation of it rather than a
+          differently-branded section. */}
+      <section className="relative h-[80vh] min-h-[620px] w-full bg-slate-950 overflow-hidden">
+        <HeroPhotoSlideshow images={heroImages} />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-0 opacity-10 pointer-events-none z-10"
           style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }}
         />
-        <div className="max-w-container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-2xl space-y-4">
-            <Badge variant="accent">OUR LOCATIONS</Badge>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
-              Find a Branch Near You
-            </h1>
-            <p className="text-gray-300 text-lg leading-relaxed">
-              Visit any of our conveniently located offices and speak directly
-              with our expert education counselors.
-            </p>
+        <div className="absolute inset-0 z-20 flex items-center pt-28 pb-16 md:pt-20 md:pb-0">
+          <div className="max-w-container mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div className="max-w-2xl space-y-4">
+              <Badge variant="accent">OUR LOCATIONS</Badge>
+              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight text-white">
+                Find a Branch Near You
+              </h1>
+              <p className="text-gray-300 text-lg leading-relaxed">
+                Visit any of our conveniently located offices and speak directly
+                with our expert education counselors.
+              </p>
+            </div>
           </div>
         </div>
       </section>

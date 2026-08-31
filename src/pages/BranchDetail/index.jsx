@@ -15,7 +15,8 @@ import {
 } from 'lucide-react';
 import { getDocument } from '../../services/api';
 import { mapLinkFor } from '../../utils/maps';
-import { usePrimaryHeroImage } from '../../hooks/usePrimaryHeroImage';
+import { useHeroImages } from '../../hooks/useHeroImages';
+import HeroPhotoSlideshow from '../../components/common/HeroPhotoSlideshow';
 import Button from '../../components/ui/Button';
 import Card, { CardBody } from '../../components/ui/Card';
 import { FacebookIcon, InstagramIcon, TiktokIcon } from '../../components/icons/SocialIcons';
@@ -34,7 +35,7 @@ const BranchDetail = () => {
   const [branch, setBranch] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lightboxIndex, setLightboxIndex] = useState(null);
-  const heroImage = usePrimaryHeroImage();
+  const heroImages = useHeroImages();
 
   useEffect(() => {
     const fetchBranch = async () => {
@@ -114,14 +115,11 @@ const BranchDetail = () => {
   return (
     <div className="bg-surface min-h-screen pt-24 pb-20">
 
-      {/* Hero Header Banner — same photo the homepage hero shows first,
+      {/* Hero Header Banner — same photo slideshow as the homepage hero,
           matching the Branches list page rather than each branch's own
           office photos (those are in the Office Photos section below). */}
       <div className="relative bg-primary text-white py-16 md:py-24 overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-20 filter blur-sm"
-          style={{ backgroundImage: `url(${heroImage})` }}
-        />
+        <HeroPhotoSlideshow images={heroImages} imgClassName="opacity-20 filter blur-sm" />
         <div className="max-w-container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <Link to="/branches" className="inline-flex items-center gap-2 text-sm text-gray-300 hover:text-white mb-6 font-semibold">
             <ArrowLeft className="w-4 h-4" /> Back to Branches
