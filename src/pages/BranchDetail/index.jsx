@@ -140,24 +140,36 @@ const BranchDetail = () => {
 
             {/* Photos */}
             <Card className="bg-white border border-gray-150">
-              <CardBody className="p-6 md:p-8 space-y-6">
-                <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
-                  <Images className="w-6 h-6 text-secondary" />
-                  <h3 className="text-xl font-bold text-primary">Office Photos</h3>
+              <CardBody className="p-6 md:p-8 space-y-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
+                      <Images className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-lg font-bold text-primary">Office Photos</h3>
+                  </div>
+                  {photos.length > 0 && (
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-text-secondary">
+                      {photos.length} {photos.length === 1 ? 'Photo' : 'Photos'}
+                    </span>
+                  )}
                 </div>
+                <div className="h-px bg-gray-100" />
                 {photos.length > 0 ? (
-                  <div className={`grid gap-3 ${photos.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                  <div className={`grid gap-3 h-80 ${photos.length > 1 ? 'grid-cols-3' : 'grid-cols-1'}`}>
                     {photos.map((src, i) => (
                       <button
                         key={i}
                         type="button"
                         onClick={() => setLightboxIndex(i)}
-                        className="group relative rounded-lg overflow-hidden border border-gray-150 focus:outline-none focus:ring-2 focus:ring-secondary"
+                        className={`group relative rounded-lg overflow-hidden border border-gray-150 focus:outline-none focus:ring-2 focus:ring-secondary ${
+                          i === 0 && photos.length > 1 ? 'col-span-2' : 'col-span-1'
+                        }`}
                       >
                         <img
                           src={src}
                           alt={`${branch.name} office ${i + 1}`}
-                          className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                       </button>
                     ))}
@@ -173,13 +185,13 @@ const BranchDetail = () => {
             {/* Opening Hours */}
             {branch.openingHours && (
               <Card className="bg-white border border-gray-150">
-                <CardBody className="p-6 md:p-8 space-y-4">
+                <CardBody className="p-6 md:p-8">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-md bg-amber-50 text-accent flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-lg bg-amber-50 text-accent flex items-center justify-center shrink-0">
                       <Clock className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-text-secondary uppercase tracking-wider">Opening Hours</h4>
+                      <h4 className="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Opening Hours</h4>
                       <p className="text-lg font-extrabold text-primary">{branch.openingHours}</p>
                     </div>
                   </div>
@@ -190,63 +202,93 @@ const BranchDetail = () => {
 
           {/* Right Column - Contact Card */}
           <div className="lg:col-span-4 lg:sticky lg:top-28">
-            <Card className="bg-white border border-gray-150 p-6 md:p-8 shadow-sm space-y-5">
-              <h3 className="text-xl font-bold text-primary">Contact This Branch</h3>
-
-              <div className="space-y-4 text-sm text-text-secondary">
-                {branch.address && (
-                  <div className="flex items-start gap-2.5">
-                    <MapPin className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                    <span>{branch.address}</span>
-                  </div>
-                )}
-                {branch.phone && (
-                  <div className="flex items-center gap-2.5">
-                    <Phone className="w-4 h-4 text-secondary shrink-0" />
-                    <a href={`tel:${branch.phone}`} className="hover:text-secondary transition-colors font-medium">
-                      {branch.phone}
-                    </a>
-                  </div>
-                )}
-                {branch.email && (
-                  <div className="flex items-center gap-2.5">
-                    <Mail className="w-4 h-4 text-secondary shrink-0" />
-                    <a href={`mailto:${branch.email}`} className="hover:text-secondary transition-colors truncate font-medium">
-                      {branch.email}
-                    </a>
-                  </div>
-                )}
+            <Card className="bg-white border border-gray-150 shadow-sm overflow-hidden">
+              <div className="bg-primary text-white px-6 py-5">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-white/60">
+                  {branch.name}
+                </p>
+                <h3 className="text-xl font-bold mt-0.5">Contact This Branch</h3>
               </div>
 
-              {socialItemsFor(branch).length > 0 && (
-                <div className="flex items-center gap-2 pt-1">
-                  {socialItemsFor(branch).map(({ key, url, Icon, label }) => (
+              <CardBody className="p-6 md:p-8 space-y-5">
+                <div className="space-y-4">
+                  {branch.address && (
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
+                        <MapPin className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">Address</p>
+                        <p className="text-sm font-semibold text-text-primary">{branch.address}</p>
+                      </div>
+                    </div>
+                  )}
+                  {branch.phone && (
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
+                        <Phone className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">Phone</p>
+                        <a href={`tel:${branch.phone}`} className="text-sm font-semibold text-text-primary hover:text-secondary transition-colors">
+                          {branch.phone}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  {branch.email && (
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
+                        <Mail className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">Email</p>
+                        <a href={`mailto:${branch.email}`} className="text-sm font-semibold text-text-primary hover:text-secondary transition-colors truncate block">
+                          {branch.email}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {socialItemsFor(branch).length > 0 && (
+                  <div className="flex items-center gap-2 pt-1">
+                    {socialItemsFor(branch).map(({ key, url, Icon, label }) => (
+                      <a
+                        key={key}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${branch.name} on ${label}`}
+                        title={label}
+                        className="w-9 h-9 rounded-full bg-secondary/10 text-secondary hover:bg-secondary hover:text-white focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 flex items-center justify-center transition-colors"
+                      >
+                        <Icon className="w-4 h-4" />
+                      </a>
+                    ))}
+                  </div>
+                )}
+
+                <div className="space-y-2 pt-1">
+                  {mapLinkFor(branch) && (
                     <a
-                      key={key}
-                      href={url}
+                      href={mapLinkFor(branch)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={`${branch.name} on ${label}`}
-                      title={label}
-                      className="w-9 h-9 rounded-full bg-secondary/10 text-secondary hover:bg-secondary hover:text-white focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 flex items-center justify-center transition-colors"
+                      className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg bg-secondary text-white text-sm font-bold hover:bg-secondary-dark focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 transition-colors"
                     >
-                      <Icon className="w-4 h-4" />
+                      <Navigation className="w-4 h-4 shrink-0" />
+                      Get Directions
                     </a>
-                  ))}
+                  )}
+                  <Link
+                    to="/contact"
+                    className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-gray-200 text-text-primary text-sm font-bold hover:border-secondary hover:text-secondary focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 transition-colors"
+                  >
+                    Book a Consultation
+                  </Link>
                 </div>
-              )}
-
-              {mapLinkFor(branch) && (
-                <a
-                  href={mapLinkFor(branch)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-secondary/30 bg-secondary/5 text-secondary text-sm font-bold hover:bg-secondary hover:text-white focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 transition-colors"
-                >
-                  <Navigation className="w-4 h-4 shrink-0" />
-                  Get Directions
-                </a>
-              )}
+              </CardBody>
             </Card>
           </div>
 
