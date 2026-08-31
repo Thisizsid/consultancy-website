@@ -13,6 +13,7 @@ import Events from './pages/Events';
 import Gallery from './pages/Gallery';
 import Contact from './pages/Contact';
 import Branches from './pages/Branches';
+import BranchDetail from './pages/BranchDetail';
 
 // Admin Layout & Pages
 import AdminLayout from './admin/layout/AdminLayout';
@@ -55,6 +56,7 @@ function App() {
           <Route path="gallery" element={<Gallery />} />
           <Route path="contact" element={<Contact />} />
           <Route path="branches" element={<Branches />} />
+          <Route path="branches/:id" element={<BranchDetail />} />
         </Route>
 
         {/* Admin Login Route */}

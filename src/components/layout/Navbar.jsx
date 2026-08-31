@@ -100,7 +100,7 @@ const Navbar = () => {
         key: b.id || idx,
         label: b.name,
         icon: MapPin,
-        path: `/branches#${b.id || idx}`,
+        path: `/branches/${b.id || idx}`,
       })),
     },
   };
