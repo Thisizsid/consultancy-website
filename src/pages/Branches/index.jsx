@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { getAllDocuments } from '../../services/api';
 import { mapLinkFor } from '../../utils/maps';
+import { usePrimaryHeroImage } from '../../hooks/usePrimaryHeroImage';
 import Badge from '../../components/ui/Badge';
 import { FacebookIcon, InstagramIcon, TiktokIcon } from '../../components/icons/SocialIcons';
 
@@ -30,6 +31,7 @@ const Branches = () => {
   const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
+  const heroImage = usePrimaryHeroImage();
 
   useEffect(() => {
     const fetchBranches = async () => {
@@ -58,7 +60,15 @@ const Branches = () => {
   return (
     <div className="overflow-hidden">
       {/* PAGE HERO */}
-      <section className="relative bg-gradient-to-br from-primary via-primary-light to-accent text-white pt-32 pb-16 md:pt-40 md:pb-24">
+      <section className="relative bg-primary text-white pt-32 pb-16 md:pt-40 md:pb-24 overflow-hidden">
+        {/* Same photo the homepage hero currently shows first, so the
+            Branches page reads as a continuation of it rather than a
+            differently-branded section. */}
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-25 filter blur-sm"
+          style={{ backgroundImage: `url(${heroImage})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary-light/90 to-accent/80" />
         <div className="absolute inset-0 opacity-10 pointer-events-none"
           style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }}
         />
