@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   GitBranch,
@@ -8,6 +8,10 @@ import {
   Clock,
   Building2,
   Navigation,
+  Images,
+  X,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { getAllDocuments } from '../../services/api';
 import { mapLinkFor } from '../../utils/maps';
@@ -29,6 +33,7 @@ const Branches = () => {
   const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
+  const [lightbox, setLightbox] = useState({ open: false, branchName: '', photos: [], index: 0 });
 
   useEffect(() => {
     const fetchBranches = async () => {
@@ -53,6 +58,46 @@ const Branches = () => {
       }
     }
   }, [loading, location.hash]);
+
+  const openLightbox = (branch, index) => {
+    setLightbox({ open: true, branchName: branch.name, photos: photosFor(branch), index });
+  };
+
+  const closeLightbox = useCallback(() => {
+    setLightbox((prev) => ({ ...prev, open: false }));
+  }, []);
+
+  const goToPrev = useCallback(() => {
+    setLightbox((prev) => ({
+      ...prev,
+      index: (prev.index - 1 + prev.photos.length) % prev.photos.length,
+    }));
+  }, []);
+
+  const goToNext = useCallback(() => {
+    setLightbox((prev) => ({
+      ...prev,
+      index: (prev.index + 1) % prev.photos.length,
+    }));
+  }, []);
+
+  // Keyboard navigation for the lightbox
+  useEffect(() => {
+    if (!lightbox.open) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') goToPrev();
+      if (e.key === 'ArrowRight') goToNext();
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [lightbox.open, closeLightbox, goToPrev, goToNext]);
 
   return (
     <div className="overflow-hidden">
@@ -99,32 +144,28 @@ const Branches = () => {
                   id={branch.id}
                   className="group bg-white border border-gray-150 rounded-xl p-6 flex flex-col gap-5 shadow-sm hover:shadow-lg hover:border-secondary/30 transition-all duration-300 scroll-mt-28"
                 >
-                  {photosFor(branch).length > 0 && (
-                    <div className={`grid gap-1.5 -mx-6 -mt-6 rounded-t-xl overflow-hidden ${
-                      photosFor(branch).length === 2 ? 'grid-cols-2' : 'grid-cols-1'
-                    }`}>
-                      {photosFor(branch).map((src, i) => (
-                        <img
-                          key={i}
-                          src={src}
-                          alt={`${branch.name} office ${i + 1}`}
-                          className="w-full h-32 object-cover"
-                        />
-                      ))}
-                    </div>
-                  )}
-
                   {/* Header */}
-                  <div className="flex items-start gap-3">
-                    <div className="w-11 h-11 rounded-lg bg-secondary/10 flex items-center justify-center shrink-0 group-hover:bg-secondary/20 transition-colors">
-                      <GitBranch className="w-5 h-5 text-secondary" />
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-11 h-11 rounded-lg bg-secondary/10 flex items-center justify-center shrink-0 group-hover:bg-secondary/20 transition-colors">
+                        <GitBranch className="w-5 h-5 text-secondary" />
+                      </div>
+                      <div>
+                        <h2 className="font-bold text-text-primary text-base leading-snug">
+                          {branch.name}
+                        </h2>
+                        <p className="text-xs text-secondary font-semibold mt-0.5">{branch.city}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="font-bold text-text-primary text-base leading-snug">
-                        {branch.name}
-                      </h2>
-                      <p className="text-xs text-secondary font-semibold mt-0.5">{branch.city}</p>
-                    </div>
+                    {photosFor(branch).length > 0 && (
+                      <button
+                        onClick={() => openLightbox(branch, 0)}
+                        className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/10 text-secondary text-xs font-bold hover:bg-secondary hover:text-white focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 transition-colors"
+                      >
+                        <Images className="w-3.5 h-3.5" />
+                        View Photos
+                      </button>
+                    )}
                   </div>
 
                   {/* Divider */}
@@ -205,6 +246,57 @@ const Branches = () => {
           )}
         </div>
       </section>
+
+      {/* Photo Lightbox */}
+      {lightbox.open && lightbox.photos.length > 0 && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center"
+          onClick={closeLightbox}
+        >
+          <button
+            onClick={closeLightbox}
+            className="absolute top-5 right-5 z-10 p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            aria-label="Close lightbox"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          <div className="absolute top-5 left-5 z-10 px-4 py-2 rounded-full bg-white/10 text-white/80 text-xs font-semibold">
+            {lightbox.branchName} — {lightbox.index + 1} / {lightbox.photos.length}
+          </div>
+
+          {lightbox.photos.length > 1 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); goToPrev(); }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all hover:scale-110"
+              aria-label="Previous photo"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+          )}
+
+          {lightbox.photos.length > 1 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); goToNext(); }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all hover:scale-110"
+              aria-label="Next photo"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          )}
+
+          <div
+            className="flex items-center justify-center max-w-[90vw] max-h-[85vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={lightbox.photos[lightbox.index]}
+              alt={`${lightbox.branchName} office ${lightbox.index + 1}`}
+              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

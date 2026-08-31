@@ -9,7 +9,7 @@ import {
   deleteDocument,
 } from '../../../services/api';
 import { uploadFileApi as uploadFile } from '../../../services/api';
-import { GitBranch, Plus, Edit2, Trash2, MapPin, Phone, Mail, Clock, ExternalLink } from 'lucide-react';
+import { GitBranch, Plus, Edit2, Trash2, MapPin, Phone, Mail, Clock, ExternalLink, X, Undo2 } from 'lucide-react';
 import { mapLinkFor } from '../../../utils/maps';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
@@ -52,6 +52,11 @@ const BranchesCMS = () => {
   const [editingBranch, setEditingBranch] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [confirmState, setConfirmState] = useState({ open: false, id: null });
+  // Tracks which of the current branch's saved photos the admin marked for
+  // removal, keyed by slot (1/2). Separate from react-hook-form state since
+  // it drives the "keep existing image" fallback in onSubmit, not a field
+  // that's itself submitted.
+  const [removedPhotos, setRemovedPhotos] = useState({});
 
   const { showToast } = useUiStore();
   const { fetchStats } = useDashboardStore();
@@ -99,6 +104,7 @@ const BranchesCMS = () => {
 
   const handleAddClick = () => {
     setEditingBranch(null);
+    setRemovedPhotos({});
     reset({
       name: '',
       address: '',
@@ -119,6 +125,7 @@ const BranchesCMS = () => {
 
   const handleEditClick = (branch) => {
     setEditingBranch(branch);
+    setRemovedPhotos({});
     reset({
       name: branch.name,
       address: branch.address,
@@ -170,7 +177,7 @@ const BranchesCMS = () => {
           return;
         }
       }
-      if (editingBranch && !finalPhoto1) {
+      if (editingBranch && !finalPhoto1 && !removedPhotos[1]) {
         finalPhoto1 = editingBranch.photo1 || '';
       }
 
@@ -185,7 +192,7 @@ const BranchesCMS = () => {
           return;
         }
       }
-      if (editingBranch && !finalPhoto2) {
+      if (editingBranch && !finalPhoto2 && !removedPhotos[2]) {
         finalPhoto2 = editingBranch.photo2 || '';
       }
 
@@ -386,11 +393,32 @@ const BranchesCMS = () => {
             <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
               {[1, 2].map((n) => {
                 const currentUrl = editingBranch?.[`photo${n}`];
+                const isRemoved = removedPhotos[n];
                 return (
                   <div key={n} className="space-y-2">
-                    {currentUrl && (
-                      <div className="rounded-lg overflow-hidden border border-gray-150 bg-gray-50">
+                    {currentUrl && !isRemoved && (
+                      <div className="relative rounded-lg overflow-hidden border border-gray-150 bg-gray-50">
                         <img src={currentUrl} alt={`Current photo ${n}`} className="w-full h-28 object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setRemovedPhotos((prev) => ({ ...prev, [n]: true }))}
+                          title={`Remove photo ${n}`}
+                          className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-red-600 transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
+                    {currentUrl && isRemoved && (
+                      <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-dashed border-gray-300 bg-gray-50">
+                        <span className="text-[11px] text-text-secondary">Will be removed on save</span>
+                        <button
+                          type="button"
+                          onClick={() => setRemovedPhotos((prev) => ({ ...prev, [n]: false }))}
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-secondary hover:underline"
+                        >
+                          <Undo2 className="w-3 h-3" /> Undo
+                        </button>
                       </div>
                     )}
                     <div>
