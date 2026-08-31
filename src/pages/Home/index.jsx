@@ -120,6 +120,14 @@ const Home = () => {
   // their photos mixed in among the stock defaults.
   const heroSlides = cmsSlides.length > 0 ? cmsSlides : defaultHeroSlides;
 
+  // failedSlides is keyed by image URL (not array index): the hero starts
+  // out showing the default slides while CMS data is still loading, and a
+  // default photo failing (e.g. CSP-blocked) must not permanently mark the
+  // real CMS photo that later takes over the same index as failed too.
+  useEffect(() => {
+    setFailedSlides({});
+  }, [cmsSlides]);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
@@ -237,13 +245,13 @@ const Home = () => {
               >
                 {/* Image background with dark overlay */}
                 <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/75 to-transparent z-10 pointer-events-none" />
-                {failedSlides[index] ? (
+                {failedSlides[slide.image] ? (
                   <div className="w-full h-full bg-gradient-to-br from-primary via-primary-light to-accent" />
                 ) : (
                   <img
                     src={slide.image}
                     alt={slide.title}
-                    onError={() => setFailedSlides((prev) => ({ ...prev, [index]: true }))}
+                    onError={() => setFailedSlides((prev) => ({ ...prev, [slide.image]: true }))}
                     className="w-full h-full object-cover object-center transform transition-transform duration-10000 ease-linear"
                   />
                 )}

@@ -8,6 +8,7 @@ import {
   updateDocument,
   deleteDocument,
 } from '../../../services/api';
+import { uploadFileApi as uploadFile } from '../../../services/api';
 import { GitBranch, Plus, Edit2, Trash2, MapPin, Phone, Mail, Clock, ExternalLink } from 'lucide-react';
 import { mapLinkFor } from '../../../utils/maps';
 import Card from '../../../components/ui/Card';
@@ -38,6 +39,10 @@ const branchSchema = z.object({
   facebook: optionalUrl,
   instagram: optionalUrl,
   tiktok: optionalUrl,
+  photo1: z.any().optional(),
+  photo1Url: optionalUrl,
+  photo2: z.any().optional(),
+  photo2Url: optionalUrl,
 });
 
 const BranchesCMS = () => {
@@ -70,6 +75,8 @@ const BranchesCMS = () => {
       facebook: '',
       instagram: '',
       tiktok: '',
+      photo1Url: '',
+      photo2Url: '',
     },
   });
 
@@ -104,6 +111,8 @@ const BranchesCMS = () => {
       facebook: '',
       instagram: '',
       tiktok: '',
+      photo1Url: '',
+      photo2Url: '',
     });
     setIsModalOpen(true);
   };
@@ -122,6 +131,8 @@ const BranchesCMS = () => {
       facebook: branch.facebook || '',
       instagram: branch.instagram || '',
       tiktok: branch.tiktok || '',
+      photo1Url: '',
+      photo2Url: '',
     });
     setIsModalOpen(true);
   };
@@ -146,11 +157,45 @@ const BranchesCMS = () => {
   const onSubmit = async (formData) => {
     setSubmitting(true);
     try {
+      const { photo1, photo1Url, photo2, photo2Url, ...rest } = formData;
+
+      let finalPhoto1 = photo1Url || '';
+      if (photo1 && photo1.length > 0) {
+        try {
+          finalPhoto1 = await uploadFile(photo1[0], 'branches');
+        } catch (uploadErr) {
+          console.error('Branch photo 1 upload failed:', uploadErr);
+          showToast('Photo 1 upload failed. Please try again.', 'error');
+          setSubmitting(false);
+          return;
+        }
+      }
+      if (editingBranch && !finalPhoto1) {
+        finalPhoto1 = editingBranch.photo1 || '';
+      }
+
+      let finalPhoto2 = photo2Url || '';
+      if (photo2 && photo2.length > 0) {
+        try {
+          finalPhoto2 = await uploadFile(photo2[0], 'branches');
+        } catch (uploadErr) {
+          console.error('Branch photo 2 upload failed:', uploadErr);
+          showToast('Photo 2 upload failed. Please try again.', 'error');
+          setSubmitting(false);
+          return;
+        }
+      }
+      if (editingBranch && !finalPhoto2) {
+        finalPhoto2 = editingBranch.photo2 || '';
+      }
+
+      const docData = { ...rest, photo1: finalPhoto1, photo2: finalPhoto2 };
+
       if (editingBranch) {
-        await updateDocument('branches', editingBranch.id, formData);
+        await updateDocument('branches', editingBranch.id, docData);
         showToast('Branch updated successfully.', 'success');
       } else {
-        await createDocument('branches', formData);
+        await createDocument('branches', docData);
         showToast('Branch created successfully.', 'success');
       }
       setIsModalOpen(false);
@@ -330,6 +375,44 @@ const BranchesCMS = () => {
               {errors.status && (
                 <p className="mt-1 text-xs text-red-600 font-medium">{errors.status.message}</p>
               )}
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-gray-100">
+            <h3 className="text-sm font-bold text-text-primary">Branch Photos (optional)</h3>
+            <p className="mt-0.5 text-[11px] text-text-secondary">
+              Up to two photos of this office, shown on the branch card.
+            </p>
+            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[1, 2].map((n) => {
+                const currentUrl = editingBranch?.[`photo${n}`];
+                return (
+                  <div key={n} className="space-y-2">
+                    {currentUrl && (
+                      <div className="rounded-lg overflow-hidden border border-gray-150 bg-gray-50">
+                        <img src={currentUrl} alt={`Current photo ${n}`} className="w-full h-28 object-cover" />
+                      </div>
+                    )}
+                    <div>
+                      <label className="block text-sm font-semibold text-text-primary mb-1">
+                        Photo {n}
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        {...register(`photo${n}`)}
+                        className="w-full text-xs text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-secondary hover:file:bg-blue-100 cursor-pointer"
+                      />
+                    </div>
+                    <Input
+                      label={`OR Paste Image URL (Photo ${n})`}
+                      placeholder="https://..."
+                      {...register(`photo${n}Url`)}
+                      error={errors[`photo${n}Url`]?.message}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
 

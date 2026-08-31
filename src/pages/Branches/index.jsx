@@ -14,6 +14,9 @@ import { mapLinkFor } from '../../utils/maps';
 import Badge from '../../components/ui/Badge';
 import { FacebookIcon, InstagramIcon, TiktokIcon } from '../../components/icons/SocialIcons';
 
+/** Per-branch office photos, in a fixed display order. */
+const photosFor = (branch) => [branch.photo1, branch.photo2].filter(Boolean);
+
 /** Per-branch social profiles, in a fixed display order. */
 const socialItemsFor = (branch) =>
   [
@@ -96,6 +99,21 @@ const Branches = () => {
                   id={branch.id}
                   className="group bg-white border border-gray-150 rounded-xl p-6 flex flex-col gap-5 shadow-sm hover:shadow-lg hover:border-secondary/30 transition-all duration-300 scroll-mt-28"
                 >
+                  {photosFor(branch).length > 0 && (
+                    <div className={`grid gap-1.5 -mx-6 -mt-6 rounded-t-xl overflow-hidden ${
+                      photosFor(branch).length === 2 ? 'grid-cols-2' : 'grid-cols-1'
+                    }`}>
+                      {photosFor(branch).map((src, i) => (
+                        <img
+                          key={i}
+                          src={src}
+                          alt={`${branch.name} office ${i + 1}`}
+                          className="w-full h-32 object-cover"
+                        />
+                      ))}
+                    </div>
+                  )}
+
                   {/* Header */}
                   <div className="flex items-start gap-3">
                     <div className="w-11 h-11 rounded-lg bg-secondary/10 flex items-center justify-center shrink-0 group-hover:bg-secondary/20 transition-colors">

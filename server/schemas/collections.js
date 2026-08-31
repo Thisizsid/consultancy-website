@@ -86,6 +86,10 @@ const branchSchema = z.object({
   facebook: url().optional(),
   instagram: url().optional(),
   tiktok: url().optional(),
+  // Two office photos shown on the branch card. Optional so existing
+  // branches created before this field existed keep validating.
+  photo1: url().optional(),
+  photo2: url().optional(),
 }).strict();
 
 const gallerySchema = z.object({
