@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -30,8 +30,13 @@ const MAX_ATTEMPTS = 5;
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, isAuthenticated, loading } = useAuthStore();
 
+  // useIdleLogout redirects here with this flag after 30 minutes of no
+  // activity — surfaced once so a returning admin knows why they were
+  // signed out rather than assuming a bug or a stolen-session concern.
+  const [idleLogout] = useState(Boolean(location.state?.idleLogout));
   const [authError, setAuthError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [attempts, setAttempts] = useState(0);
@@ -150,6 +155,14 @@ const Login = () => {
                     Enter your administrator credentials to access the CMS.
                   </p>
                 </div>
+
+                {/* Idle auto-logout notice */}
+                {idleLogout && !isLocked && (
+                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2 text-blue-700 text-xs">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span>You were signed out after 30 minutes of inactivity. Please sign in again.</span>
+                  </div>
+                )}
 
                 {/* Lockout banner */}
                 {isLocked && (

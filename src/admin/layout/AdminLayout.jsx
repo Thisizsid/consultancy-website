@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useUiStore } from '../../store/uiStore';
+import { useIdleLogout } from '../../hooks/useIdleLogout';
 import Button from '../../components/ui/Button';
 import logo from '../../assets/logo.png';
 import ChangePasswordModal from '../components/ChangePasswordModal';
@@ -30,6 +31,8 @@ const AdminLayout = () => {
   const { user, logout } = useAuthStore();
   const { sidebarOpen, toggleSidebar, setSidebarOpen, toast, clearToast } = useUiStore();
   const [pwModalOpen, setPwModalOpen] = useState(false);
+
+  useIdleLogout();
 
   // Collapse the mobile drawer after navigating so it doesn't cover the new page
   useEffect(() => {
