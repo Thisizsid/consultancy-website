@@ -1,19 +1,24 @@
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 /**
- * Base fetch wrapper with auth header & error handling
+ * Base fetch wrapper with auth cookie & error handling.
+ *
+ * `credentials: 'include'` is what makes the browser attach the httpOnly
+ * admin_token cookie (and let the server's Set-Cookie respond be honored)
+ * even when the API is on a different origin/port than the frontend, as in
+ * local dev (5173 vs 5000) — without it, cross-origin fetches never send or
+ * accept cookies regardless of the server's CORS config.
  */
 const apiRequest = async (url, options = {}) => {
-  const token = localStorage.getItem('lasso_admin_token');
   const headers = {
     'Content-Type': 'application/json',
-    ...(token ? { Authorization: 'Bearer ' + token } : {}),
     ...options.headers,
   };
 
   const config = {
     ...options,
     headers,
+    credentials: 'include',
   };
 
   const response = await fetch(`${API_BASE}${url}`, config);
@@ -41,15 +46,15 @@ const apiRequest = async (url, options = {}) => {
 };
 
 // --- AUTH API ---
+// The token itself now lives only in an httpOnly cookie the server sets on
+// login and clears on logout — never in a JS-readable form (no
+// localStorage, no response body), so there's nothing for these to store
+// or clear client-side beyond the request itself.
 export const loginApi = async (email, password) => {
-  const res = await apiRequest('/auth/login', {
+  return await apiRequest('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
-  if (res.token) {
-    localStorage.setItem('lasso_admin_token', res.token);
-  }
-  return res;
 };
 
 export const checkAuthApi = async () => {
@@ -57,16 +62,11 @@ export const checkAuthApi = async () => {
 };
 
 export const logoutApi = async () => {
-  try {
-    // Best-effort: invalidates the token server-side (bumps token_version)
-    // so it can't be reused even if it leaked. If this fails — token
-    // already expired/revoked, offline, etc — still clear the local copy.
-    await apiRequest('/auth/logout', { method: 'POST' });
-  } catch {
-    // Ignore — the local token is removed either way below.
-  } finally {
-    localStorage.removeItem('lasso_admin_token');
-  }
+  // Best-effort: invalidates the token server-side (bumps token_version)
+  // and clears the cookie. If this fails — token already
+  // expired/revoked, offline, etc — the caller still treats the session as
+  // ended locally regardless.
+  await apiRequest('/auth/logout', { method: 'POST' });
 };
 
 export const forgotPasswordApi = async () => {
@@ -96,15 +96,12 @@ export const uploadFileApi = async (file) => {
     return file;
   }
 
-  const token = localStorage.getItem('lasso_admin_token');
   const formData = new FormData();
   formData.append('file', file);
 
   const response = await fetch(`${API_BASE}/upload`, {
     method: 'POST',
-    headers: {
-      ...(token ? { Authorization: 'Bearer ' + token } : {}),
-    },
+    credentials: 'include',
     body: formData,
   });
 

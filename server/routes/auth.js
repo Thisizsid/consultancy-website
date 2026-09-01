@@ -2,7 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { Resend } from 'resend';
-import { generateToken, verifyTokenMiddleware } from '../middleware/auth.js';
+import { generateToken, verifyTokenMiddleware, setAuthCookie, clearAuthCookie } from '../middleware/auth.js';
 import { getDb } from '../config/db.js';
 import { loginLimiter, forgotPasswordLimiter, resetPasswordLimiter } from '../middleware/rateLimit.js';
 
@@ -68,7 +68,11 @@ router.post('/login', loginLimiter, async (req, res) => {
         };
 
         const token = generateToken({ ...user, tokenVersion: adminUser.token_version || 0 });
-        return res.json({ user, token });
+        // The token now lives only in an httpOnly cookie, never in the
+        // response body — keeps it out of reach of any JS on the page
+        // (devtools, an XSS bug, a careless console.log of the response).
+        setAuthCookie(res, token);
+        return res.json({ user });
       }
     );
   } catch (error) {
@@ -87,11 +91,10 @@ router.get('/me', verifyTokenMiddleware, (req, res) => {
 
 /**
  * POST /api/auth/logout
- * Previously client-side only (just clearing localStorage), which meant a
- * stolen or copied token stayed valid until its natural expiry regardless
- * of "logging out". Bumping token_version here makes logout actually
- * revoke the token server-side, immediately — for this session and any
- * other outstanding one for the same account.
+ * Bumping token_version makes logout actually revoke the token
+ * server-side, immediately — for this session and any other outstanding
+ * one for the same account — rather than leaving it valid until its
+ * natural expiry. clearAuthCookie removes it from the browser too.
  */
 router.post('/logout', verifyTokenMiddleware, (req, res) => {
   const db = getDb();
@@ -103,6 +106,7 @@ router.post('/logout', verifyTokenMiddleware, (req, res) => {
         console.error('Logout token invalidation failed:', err);
         return res.status(500).json({ error: 'Logout failed' });
       }
+      clearAuthCookie(res);
       return res.json({ message: 'Logged out' });
     }
   );
@@ -293,6 +297,12 @@ router.put('/change-password', verifyTokenMiddleware, async (req, res) => {
           if (updateErr) {
             return res.status(500).json({ error: 'Failed to update password' });
           }
+          // The token_version bump above already invalidated this cookie
+          // server-side — clear it from the browser too, or it lingers
+          // (harmlessly, since verifyTokenMiddleware now rejects it) until
+          // its natural 24h expiry. The client logs out right after this
+          // call anyway; this just makes that immediate instead of eventual.
+          clearAuthCookie(res);
           return res.json({ message: 'Password changed successfully' });
         }
       );

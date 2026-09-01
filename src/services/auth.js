@@ -37,11 +37,24 @@ export const changeAdminPassword = async (currentPassword, newPassword) => {
 };
 
 /**
- * Listen for auth state changes / restore session on load
+ * Listen for auth state changes / restore session on load.
+ *
+ * The real token lives in an httpOnly cookie, invisible to JS by design —
+ * so this can't just peek at it the way a localStorage token used to be
+ * checked. Instead it reads the non-httpOnly `admin_session` hint cookie
+ * (see server/middleware/auth.js) to skip the /auth/me round trip
+ * entirely for the common case (a public visitor with no session at all),
+ * while still treating the hint as advisory: a valid-looking hint still
+ * goes through checkAuthApi() to confirm the actual session, since the
+ * hint alone can't know if the token was revoked elsewhere (password
+ * change, explicit logout on another device).
  */
 export const subscribeToAuthChanges = (callback) => {
-  const token = localStorage.getItem('lasso_admin_token');
-  if (!token) {
+  const hasSessionHint = document.cookie
+    .split('; ')
+    .some((c) => c.startsWith('admin_session='));
+
+  if (!hasSessionHint) {
     callback(null);
     return () => {};
   }

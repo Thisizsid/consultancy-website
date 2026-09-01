@@ -15,19 +15,66 @@ if (!JWT_SECRET) {
 // especially given the revocation check below only invalidates it early on
 // an explicit logout/password change — outside of that it's still a bearer
 // token valid until expiry.
-const TOKEN_TTL = '24h';
+const TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 
 export const generateToken = (payload) => {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: TOKEN_TTL });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: TOKEN_TTL_MS / 1000 });
+};
+
+export const AUTH_COOKIE_NAME = 'admin_token';
+
+// Shared by login (to set the cookie) and logout (to clear it) — clearing a
+// cookie requires sending the exact same path/domain/sameSite/secure
+// attributes it was set with, or the browser treats it as a different
+// cookie and leaves the original in place.
+//
+// httpOnly: keeps the token out of reach of any JS running on the page —
+// the whole point of moving off localStorage, where an XSS bug could just
+// read it out directly.
+// sameSite: 'lax': the browser withholds the cookie on cross-site
+// *requests* (a form POST or fetch from another origin) while still
+// sending it on top-level GET navigations. Every state-changing admin
+// route here is POST/PUT/DELETE, never GET, so this alone closes the CSRF
+// gap a cookie otherwise reopens (unlike a bearer token, cookies attach
+// automatically) without needing a separate CSRF token.
+// secure: only in production — the deployed site is HTTPS-only, but local
+// dev runs the API over plain http.
+export const authCookieOptions = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax',
+  path: '/',
+});
+
+// A second, non-httpOnly "logged in" hint — carries no auth power of its
+// own (it's just a flag, never checked by verifyTokenMiddleware) but lets
+// the frontend tell at a glance whether it's worth calling /auth/me at all.
+// Without it, every page load site-wide — the vast majority of which are
+// public visitors, not admins — would need a network round trip just to
+// find out there's no session, since JS can no longer read the real
+// (httpOnly) cookie to short-circuit that check locally.
+export const AUTH_HINT_COOKIE_NAME = 'admin_session';
+
+export const setAuthCookie = (res, token) => {
+  res.cookie(AUTH_COOKIE_NAME, token, { ...authCookieOptions(), maxAge: TOKEN_TTL_MS });
+  res.cookie(AUTH_HINT_COOKIE_NAME, '1', {
+    ...authCookieOptions(),
+    httpOnly: false,
+    maxAge: TOKEN_TTL_MS,
+  });
+};
+
+export const clearAuthCookie = (res) => {
+  res.clearCookie(AUTH_COOKIE_NAME, authCookieOptions());
+  res.clearCookie(AUTH_HINT_COOKIE_NAME, { ...authCookieOptions(), httpOnly: false });
 };
 
 export const verifyTokenMiddleware = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const token = req.cookies?.[AUTH_COOKIE_NAME];
+  if (!token) {
     return res.status(401).json({ error: 'Unauthorized: No token provided' });
   }
 
-  const token = authHeader.split(' ')[1];
   let decoded;
   try {
     decoded = jwt.verify(token, JWT_SECRET);
