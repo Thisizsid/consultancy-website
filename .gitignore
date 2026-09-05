@@ -63,3 +63,6 @@ server/uploads/
 public/.htaccess
 .env.bak*
 NEW_ADMIN_PASSWORD.txt
+
+# SEO audit report (local scratch, not for repo)
+SEO-AUDIT-REPORT.html
