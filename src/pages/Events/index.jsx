@@ -10,6 +10,7 @@ import Badge from '../../components/ui/Badge';
 import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
 import { useUiStore } from '../../store/uiStore';
+import { useSEO } from '../../hooks/useSEO';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -18,6 +19,12 @@ const registerSchema = z.object({
 });
 
 const Events = () => {
+  useSEO({
+    title: 'Events',
+    description: 'Join our education fairs, workshops, and visa interview simulations to prepare for your study-abroad journey.',
+    path: '/events',
+  });
+
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState(null);

@@ -20,6 +20,7 @@ import HeroPhotoSlideshow from '../../components/common/HeroPhotoSlideshow';
 import Button from '../../components/ui/Button';
 import Card, { CardBody } from '../../components/ui/Card';
 import { FacebookIcon, InstagramIcon, TiktokIcon } from '../../components/icons/SocialIcons';
+import { useSEO } from '../../hooks/useSEO';
 
 const photosFor = (branch) => [branch?.photo1, branch?.photo2].filter(Boolean);
 
@@ -36,6 +37,12 @@ const BranchDetail = () => {
   const [loading, setLoading] = useState(true);
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const heroImages = useHeroImages();
+
+  useSEO({
+    title: branch ? `${branch.name} Branch` : undefined,
+    description: branch ? `Visit our ${branch.name} branch in ${branch.city} for study-abroad counseling, application support, and visa guidance.` : undefined,
+    path: `/branches/${id}`,
+  });
 
   useEffect(() => {
     const fetchBranch = async () => {

@@ -2,10 +2,17 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { getAllDocuments } from '../../services/api';
 import { ImageIcon, X, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 import Badge from '../../components/ui/Badge';
+import { useSEO } from '../../hooks/useSEO';
 
 const CATEGORIES = ['All', 'Office', 'Events', 'Students', 'Seminars', 'Other'];
 
 const Gallery = () => {
+  useSEO({
+    title: 'Gallery',
+    description: 'Photos from our offices, student events, and seminars — a look at life at Lasso Consultancy.',
+    path: '/gallery',
+  });
+
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');

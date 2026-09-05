@@ -24,6 +24,7 @@ import Input from '../../components/ui/Input';
 import Card, { CardBody } from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import { useUiStore } from '../../store/uiStore';
+import { useSEO } from '../../hooks/useSEO';
 
 // Zod validation schema for enquiry form
 const detailEnquirySchema = z.object({
@@ -39,7 +40,13 @@ const CountryDetail = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  
+
+  useSEO({
+    title: country ? `Study in ${country.name}` : undefined,
+    description: country?.description,
+    path: `/countries/${slug}`,
+  });
+
   const { showToast } = useUiStore();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({

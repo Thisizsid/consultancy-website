@@ -16,6 +16,7 @@ import { useHeroImages } from '../../hooks/useHeroImages';
 import HeroPhotoSlideshow from '../../components/common/HeroPhotoSlideshow';
 import Badge from '../../components/ui/Badge';
 import { FacebookIcon, InstagramIcon, TiktokIcon } from '../../components/icons/SocialIcons';
+import { useSEO } from '../../hooks/useSEO';
 
 /** Per-branch office photos, in a fixed display order. */
 const photosFor = (branch) => [branch.photo1, branch.photo2].filter(Boolean);
@@ -29,6 +30,12 @@ const socialItemsFor = (branch) =>
   ].filter((item) => item.url);
 
 const Branches = () => {
+  useSEO({
+    title: 'Our Branches',
+    description: "Find a Lasso Consultancy branch near you — office locations, contact details, and opening hours.",
+    path: '/branches',
+  });
+
   const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
   const location = useLocation();

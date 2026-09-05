@@ -24,6 +24,7 @@ import Input from '../../components/ui/Input';
 import Card, { CardBody } from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import { useUiStore } from '../../store/uiStore';
+import { useSEO } from '../../hooks/useSEO';
 
 // Zod validation schema for enquiry form
 const contactSchema = z.object({
@@ -62,6 +63,11 @@ const HeroButtonLink = ({ to, children }) => {
 };
 
 const Home = () => {
+  useSEO({
+    description: "Lasso Int'l Education Consultancy helps students gain admission and visa approval for top study-abroad destinations, with expert counseling, application support, and visa guidance.",
+    path: '/',
+  });
+
   const [countries, setCountries] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
   const [events, setEvents] = useState([]);

@@ -10,6 +10,7 @@ import Input from '../../components/ui/Input';
 import Card, { CardBody } from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import { useUiStore } from '../../store/uiStore';
+import { useSEO } from '../../hooks/useSEO';
 
 const contactFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -37,6 +38,12 @@ const FALLBACK_COUNTRIES = [
 ];
 
 const Contact = () => {
+  useSEO({
+    title: 'Contact Us',
+    description: 'Get in touch with Lasso Consultancy for a free counseling session on studying abroad — visit our office, call, or send us an enquiry.',
+    path: '/contact',
+  });
+
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [officeAddress, setOfficeAddress] = useState(DEFAULT_OFFICE_ADDRESS);

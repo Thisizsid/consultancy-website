@@ -15,6 +15,7 @@ import Card, { CardBody } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import { Link } from 'react-router-dom';
+import { useSEO } from '../../hooks/useSEO';
 
 const iconMap = {
   Compass: Compass,
@@ -26,6 +27,12 @@ const iconMap = {
 };
 
 const Services = () => {
+  useSEO({
+    title: 'Our Services',
+    description: 'From counseling and university selection to visa guidance and scholarship support — explore our full range of study-abroad consultancy services.',
+    path: '/services',
+  });
+
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
 

@@ -5,8 +5,15 @@ import Card, { CardBody } from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import { ArrowRight, Globe } from 'lucide-react';
 import Button from '../../components/ui/Button';
+import { useSEO } from '../../hooks/useSEO';
 
 const Countries = () => {
+  useSEO({
+    title: 'Study Abroad Destinations',
+    description: 'Explore study-abroad destinations including Australia, Canada, the UK, the USA, New Zealand, and Europe — with tuition, living costs, and visa process details.',
+    path: '/countries',
+  });
+
   const [countries, setCountries] = useState([]);
   const [loading, setLoading] = useState(true);
 

@@ -27,6 +27,7 @@ import Input from '../../components/ui/Input';
 import Card, { CardBody } from '../../components/ui/Card';
 import { useUiStore } from '../../store/uiStore';
 import { documentSlug } from '../../utils/slug';
+import { useSEO } from '../../hooks/useSEO';
 
 // Same mapping used by the Services grid, the nav dropdown and the CMS —
 // the stored `icon` string is a key into this, not a component reference.
@@ -54,6 +55,12 @@ const ServiceDetail = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  useSEO({
+    title: service ? `${service.title} Services` : undefined,
+    description: service?.description,
+    path: `/services/${slug}`,
+  });
 
   const { showToast } = useUiStore();
 

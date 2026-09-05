@@ -14,7 +14,9 @@ import { initDb } from './config/db.js';
 import authRoutes from './routes/auth.js';
 import uploadRoutes from './routes/upload.js';
 import crudRoutes from './routes/crud.js';
+import sitemapRoutes from './routes/sitemap.js';
 import { generalLimiter } from './middleware/rateLimit.js';
+import { slugExists } from './utils/seo.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -99,6 +101,9 @@ initDb();
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/collections', crudRoutes);
+// Mounted at the root, not under /api — it's a frontend-facing file
+// (referenced from robots.txt, fetched by crawlers), not an API endpoint.
+app.use(sitemapRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -118,11 +123,51 @@ app.use('/api', (req, res) => {
 const distPath = path.resolve(__dirname, '../dist');
 if (fs.existsSync(distPath)) {
   app.use(express.static(distPath, { maxAge: isProd ? '1d' : 0 }));
+
+  // Client-side routes that don't depend on CMS content — see src/App.jsx.
+  // Admin routes are matched by prefix rather than listed individually
+  // (dashboard, hero, countries, ...): they're auth-gated client-side and
+  // excluded from robots.txt regardless, so there's no SEO reason to
+  // enumerate them here.
+  const STATIC_ROUTES = new Set(['/', '/countries', '/services', '/events', '/gallery', '/contact', '/branches']);
+  const isAdminRoute = (pathname) => pathname === '/admin' || pathname.startsWith('/admin/');
+
+  // CMS-driven detail routes (/countries/:slug, /services/:slug,
+  // /branches/:id) can't be validated from a static list — an unknown slug
+  // is exactly the case a 404 needs to catch — so these check the DB.
+  const DYNAMIC_ROUTES = [
+    { prefix: '/countries/', collection: 'countries' },
+    { prefix: '/services/', collection: 'services' },
+    { prefix: '/branches/', collection: 'branches' },
+  ];
+
+  const isKnownRoute = async (pathname) => {
+    if (STATIC_ROUTES.has(pathname) || isAdminRoute(pathname)) return true;
+
+    for (const { prefix, collection } of DYNAMIC_ROUTES) {
+      if (pathname.startsWith(prefix)) {
+        const slug = decodeURIComponent(pathname.slice(prefix.length));
+        return slug ? slugExists(collection, slug) : false;
+      }
+    }
+
+    return false;
+  };
+
   // SPA fallback: any GET that isn't a real static file or an API/uploads
-  // route is a client-side route (e.g. /countries/canada) — let React
-  // Router handle it by serving index.html.
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
+  // route is either a known client-side route (serve index.html so React
+  // Router can render it) or a genuinely nonexistent URL (respond 404 —
+  // still with index.html's body, since the app itself renders the
+  // NotFound page client-side, but the HTTP status is what tells search
+  // engines and monitoring tools this URL doesn't resolve to real content).
+  app.get('*', async (req, res) => {
+    let known = false;
+    try {
+      known = await isKnownRoute(req.path);
+    } catch (err) {
+      console.error('Error checking route existence for', req.path, err);
+    }
+    res.status(known ? 200 : 404).sendFile(path.join(distPath, 'index.html'));
   });
 }
 
